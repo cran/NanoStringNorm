@@ -1,7 +1,7 @@
 \name{background.normalization}
 \title{background.normalization}
 \alias{background.normalization}
-\description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
+\description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform}
 \usage{
 background.normalization(x, anno, Background, verbose = TRUE);
 }
@@ -13,7 +13,7 @@ background.normalization(x, anno, Background, verbose = TRUE);
 }
 \details{
 The code is based on the NanoString analysis guidelines(see references).  The function allows normalization of both mRNA and miRNA Nanostring expression data.  The order of the methods is fixed but the use of NA and multiple iterations of the functions allows flexibility.
-Note.  Poorly assayed samples could negatively influence the normalizaiton of the remaining data.  Prior to normalization check that the binding density is not less than .05 and the number of total counts/FOV is not much less than 1500. 
+Note.  Poorly assayed samples could negatively influence the normalization of the remaining data.  Prior to normalization check that the binding density is not less than .05 and the number of total counts/FOV is not much less than 1500. 
 The "Name" column of the RCC worksheet sometimes flags certain probes with the message "(+++ See Message Below)".  If this is the case a "Readme" document including probe level adjustment factors should have been supplied by your Microrray center.  This file must be edited into a tabular file and specified in the Probe.Background.Correction argument.Factor.  The function will fail with an error if warnings are detected and no probe levele correction factor is supplied. Upon correction any warning messages will be stripped from the raw data file.  This background is probe-specific and all background subtraction should be completed prior to normalization.  The number of counts to be subtracted for a given probe is determined by multiplying a correction factor by the number of counts observed for the 128 fM positive control in the same lane.
 }
 \references{

@@ -1,7 +1,7 @@
 \name{Plot.NanoStringNorm}
 \title{Plot.NanoStringNorm}
 \alias{Plot.NanoStringNorm}
-\description{Do some diagnostic and descriptive plots.}
+\description{Do some diagnostic and descriptive plots}
 \usage{
 Plot.NanoStringNorm(x, plot.type = 'norm.factors', samples = NA, trait = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE)
 }
@@ -28,7 +28,6 @@ The batch.effect plot looks for differences in sample summary statistics among g
 The norm.factors plot looks at the calculated normalization parameters for each sample. By default samples are labeled if one of the normalization factors greater than 100\% from the mean.
 \\
 The positive.control plots compare the expected concentration with observed counts.  Orange dots are the negative controls.  The intercept reflects the sensitivity of the assay for that sample
-
 
 }
 \examples{

@@ -1,7 +1,7 @@
 \name{get.geo.mean}
 \title{get.geo.mean}
 \alias{get.geo.mean}
-\description{A function to get the geometric mean.  Used in the normalization function}
+\description{A function to get the geometric mean.  Used in normalization functions}
 \usage{
 get.geo.mean(y)
 }

@@ -1,7 +1,7 @@
 \name{get.batch.effects}
 \title{get.batch.effects}
 \alias{get.batch.effects}
-\description{A function to test if there is an association between binary traits and the sample normalization factors.  Traits can include different run times, sample conditions, plate etc.  This function is called internally from the get.trait.summary.stats function. }
+\description{A function to test if there is an association between binary traits and the sample normalization factors.  Traits can include different run times, sample conditions, plate etc.  This function is called internally from the get.trait.summary.stats function}
 \usage{
 get.batch.effects(x, anno, log, traits, sample.summary.stats)
 }
@@ -16,7 +16,6 @@ get.batch.effects(x, anno, log, traits, sample.summary.stats)
 A matrix where each row has results for a one summary statistic vs one trait.
 }
 \author{Daryl M. Waggott}
-
 \keyword{NanoString}
 \keyword{Normalization}
 \keyword{mRNA}  

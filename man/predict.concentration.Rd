@@ -1,7 +1,7 @@
 \name{predict.concentration}
 \title{predict.concentration}
 \alias{predict.concentration}
-\description{A function to predict the concentration of endogenous genes from their counts.  The model is based on the relationship between the positive control counts and their known concentration. }
+\description{A function to predict the concentration of endogenous genes from their counts.  The model is based on the relationship between the positive control counts and their known concentration.}
 \usage{
 predict.concentration(x, anno, log, verbose = TRUE);
 }

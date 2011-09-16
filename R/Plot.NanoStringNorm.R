@@ -187,6 +187,9 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				trait.xlim <- 2.1;
 				}
 
+			# which genes have the most significant pvalues.
+			trait.top <- rank(-trait.p, ties.method = 'first') <= 10; 
+
 			# define the ylimits.  if very large truncate the top of the plot
 			trait.ylim.max <- max(trait.p, na.rm = TRUE);
 			trait.ylim <- trait.ylim.max;
@@ -203,7 +206,6 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			else {
 				trait.ylim <- 1.8;
 				}
-
 
 			# size the points according to mean and sig and foldchange
 			trait.cex <- rep(.5,length(trait.p));
@@ -228,9 +230,6 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				lines(x = c(-trait.xlim,-trait.xlim + .25,-trait.xlim,-trait.xlim-.25,-trait.xlim) - (.04 * 2 * trait.xlim),y = seq(10,11,.25), lwd = 2, col = 'grey60', xpd = NA);
 				axis(side = 2, at = 11, label = ceiling(trait.ylim.max), col = 'grey30', col.ticks = 'black', cex.axis = 1.2);
 				}
-
-			# which genes have the most significant pvalues.
-			trait.top <- rank(-trait.p, ties.method = 'first') <= 10;
 
 			# if best guess labeling then plot the top ranked genes
 			if (label.best.guess == TRUE & !'genes' %in% names(label.ids)) {
@@ -404,6 +403,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 					cex = .7
 					);
 				}
+			}
 		# label samples explicitly
 		else if ('samples' %in% names(label.ids)) {
 			to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
@@ -417,7 +417,6 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				);
 			}
 		}
-	}
 
 	##############################################
 	### sample. batch effects ####################
@@ -487,7 +486,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 
 			}
 		par(op.batch.effects);
-	}
+		}
 
 	##############################################
 	### sample. plot the normalization factors ###
@@ -593,10 +592,11 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			# explicitly label
 			else if ('samples' %in% names(label.ids)) {
 				to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
-				outlier.samples.labels <- names(to.label);
-				outlier.samples.labels[!to.label] <- NA;
+				sample.labels <- rownames(x$sample.summary.stats.norm)[to.label];
+				sample.labels[!to.label] <- NA;
+				sample.labels <- c(sample.labels, rep(NA,48-length(sample.labels)));
 				axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
-				axis(side = 1, at = seq(2, 4*48, by = 4), labels = outlier.samples.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
+				axis(side = 1, at = seq(2, 4*48, by = 4), labels = sample.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
 				}
 
 			# add legend and axis labels to the first plot on every page
@@ -726,7 +726,3 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	par(op.default);
 	invisible(1)
 	}
-
-
-
-
