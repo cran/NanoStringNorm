@@ -182,7 +182,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			bonferroni.alpha <- -log10(0.05/nrow(x$gene.summary.stats.norm));
 
 			# define the xlimits
-			trait.xlim <- max(trait.fc, na.rm = TRUE);
+			trait.xlim <- max(abs(trait.fc), na.rm = TRUE);
 			if (trait.xlim < 2) {
 				trait.xlim <- 2.1;
 				}
@@ -221,7 +221,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				pch = 20,
 				col = trait.col,
 				cex = trait.cex,
-				xlim = c(-max(trait.fc, na.rm = TRUE), max(trait.fc, na.rm = TRUE)),
+				xlim = c(-max(abs(trait.fc), na.rm = TRUE), max(abs(trait.fc), na.rm = TRUE)),
 				ylim = c(0, trait.ylim)
 				);
 
