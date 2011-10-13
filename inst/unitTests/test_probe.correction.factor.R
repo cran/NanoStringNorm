@@ -29,13 +29,13 @@ test_probe.correction.factor <- function() {
 	checkException(probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = NA));
 
 	# Case 3: Probe Correction Factor containing "filter" as its only element, it is a vector. Should filter the genes with messages.  
-	checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = c('filter'))); 
+	checkEquals(list(x=x.message[-c(7,9),], anno=anno.message[-c(7,9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = c('filter'))); 
 
 	# Case 4: Probe Correction Factor containing "filter" as its only element, it is a matrix. Should filter the genes with messages. FAILS** 
-    #checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.matrix('filter'))); 
+	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.matrix('filter'))); 
 
 	# Case 5: Probe Correction Factor containing "filter" as its only element, it is a data frame. Should filter the genes with messages. FAILS** 
-    #checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.data.frame('filter'))); 
+	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.data.frame('filter'))); 
 
 	# Case 6: Probe Correction Factor containing "filter", has more than one element, it is a vector. Should filter the genes with messages. FAILS** 
 	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = rep('filter', 2))); 
@@ -68,6 +68,6 @@ test_probe.correction.factor <- function() {
 	checkException(probe.correction.factor(probe.correction.matrix.4, anno=NA, test.6)); 
 
 	# Case 16: The special case where the probe corrected values are negative, should change it back to 0. FAILS**
-	# checkEquals(probe.correction.expected.2, probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = test.7)); 	
+	# checkEquals(probe.correction.expected.2, probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = test.7));
 
     }

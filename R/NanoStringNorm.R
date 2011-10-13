@@ -22,7 +22,24 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		rownames(x) <- anno$Name;
 
 		}
+	else {
 
+		# check that the annotation columns exist
+		if ( colnames(anno)[1] == "CodeClass" ) colnames(anno)[1] <- "Code.Class";
+
+		if ( any(!c('Code.Class','Name', 'Accession') %in% colnames(anno)) ) {
+			stop ("You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.");
+			}
+
+		# remove probe level warning message line from data
+		if ( grepl("+++ Functional tests", x[nrow(anno),"Name"], fixed = TRUE) ){
+			x <- x[-nrow(anno),];
+			}
+
+		x.raw <- data.frame(anno, x);
+		}
+	
+	
 	# start printing analysis log
 	if (verbose) {
 		cat('\n##############################\n');
@@ -104,7 +121,7 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		rna.content <- output.sample.content.normalization$rna.content;
 		rm(output.sample.content.normalization);
 		}
-
+	
 	# do other additional normalizations.  note these are applied to all probes but excluding counts equal to 0
 	if ( otherNorm %in% c('quantile', 'zscore') ) {
 		x <- rbind(
@@ -115,7 +132,7 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 	
 	# do rounding, log-transformation
 	x <- NanoStringNorm:::output.formatting(x, anno, otherNorm, round.values, log, verbose);
-
+	
 	# get predicted concentration based on positive controls
 	predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, log, verbose);
 

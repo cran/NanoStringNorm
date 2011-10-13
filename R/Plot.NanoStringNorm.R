@@ -12,8 +12,12 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	if ('all' %in% plot.type) { plot.type <- c('mean.sd', 'cv', 'norm.factors', 'missing', 'volcano','batch.effects','RNA.estimates','positive.controls'); }
 
 	# setup default plotting parameters
-	ns.green.rgb  <- rgb(193, 215, 46, max = 255);
+	ns.green.rgb  <- rgb(193, 215, 46, max = 255); # original
 	ns.orange.rgb <- rgb(228, 108, 11, max = 255);
+	
+	ns.green.rgb  <- rgb(193, 215, 66, max = 255); # better greyscale 
+	ns.orange.rgb <- rgb(228, 108, 0, max = 255);
+
 	op.default <- par(cex = 1, cex.lab = 1.5, cex.axis = 1, cex.main = 1.5, las = 1, pch = 20, col.lab = 'grey30', col.axis = 'grey30', col.main = 'grey30', mar = c(5.1,5.1,4.1,2.1));
 
 	##############################################
@@ -294,12 +298,12 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			xlim = c(0, max(raw.sample.Mean, na.rm = TRUE)),
 			col = ns.green.rgb
 			);
-
+		
 		# what samples are outliers for missing
 		outlier.missing <- (x$sample.summary.stats.norm$sample.Missing - mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE)) / sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
 		outlier.missing.threshold.pos <- 3 * sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
 		outlier.missing.threshold.neg <- -3 * sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
-
+		
 		# what samples are outliers for mean
 		outlier.mean <- (raw.sample.Mean - mean(raw.sample.Mean, na.rm = TRUE)) / sd(raw.sample.Mean, na.rm = TRUE);
 		outlier.mean.threshold.pos <- 3 * sd(raw.sample.Mean, na.rm = TRUE) + mean(raw.sample.Mean, na.rm = TRUE);
@@ -360,10 +364,19 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	#####################################################################################################################################################
 
 	if ('RNA.estimates' %in% plot.type) {
-
+		
 		# get the geometric mean of the HK and endogenous genes
-		RNA.hk  <- NanoStringNorm:::get.geo.mean(x$raw.data[grepl('[Hh]ousekeeping',x$raw.data$Code.Class), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')]);
-		RNA.top <- NanoStringNorm:::get.geo.mean(x$raw.data[grepl('[Ee]ndogenous',x$raw.data$Code.Class) & x$gene.summary.stats.norm$Mean > quantile(x$gene.summary.stats.norm$Mean,.8), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')]);
+		RNA.hk <- apply(
+			X = x$raw.data[grepl('[Hh]ousekeeping',x$raw.data$Code.Class), !colnames(x$raw.data) %in%     c('Code.Class','Name', 'Accession')],
+			MARGIN = 2,
+			FUN = NanoStringNorm:::get.geo.mean
+			);
+
+		RNA.top <- apply(
+			X = x$raw.data[grepl('[Ee]ndogenous',x$raw.data$Code.Class) & x$gene.summary.stats.norm$    Mean > quantile(x$gene.summary.stats.norm$Mean,.8), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
+			MARGIN = 2,
+			FUN = NanoStringNorm:::get.geo.mean
+			);
 
 		# plot a scatterplot of the points
 		plot(
@@ -500,7 +513,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 		# for simplicity add collate all the relevent data into a new object
 		normalization.factors.to.plot <- cbind(
 			x$sample.summary.stats.norm$pos.norm.factor, 
-			mean(x$sample.summary.stats.norm$background.level)/x$sample.summary.stats.norm$background.level, 
+			mean(x$sample.summary.stats.norm$background.level) / x$sample.summary.stats.norm$background.level, 
 			x$sample.summary.stats.norm$sampleContent.norm.factor
 			);
 
@@ -700,7 +713,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			# only add the legend, main and axis labels to the first plot on a page
 			if (i %in% seq(4,ncol(x$normalized.data),12)) {
 				legend(
-					x = 14.5, y = 22.3,
+					#x = 14.5, y = 22.3,
+					x = 14.5, y = max.obs.pos + 6.9,
 					legend = c('Positive Controls', 'Negative Controls'),
 					col = c(ns.green.rgb, ns.orange.rgb),
 					text.col = 'grey30',

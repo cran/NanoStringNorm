@@ -90,7 +90,7 @@ png('NanoStringNorm_Example_Plots_\%03d.png', units = 'in',  height = 6, width =
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = TRUE,
-	plot.type = 'all'
+	plot.type = c('cv','mean.sd','RNA.estimates','volcano','missing','norm.factors','positive.controls','batch.effects')
 	);
 dev.off()
 
@@ -104,6 +104,15 @@ Plot.NanoStringNorm(
 	);
 dev.off()
 
+# testing
+png('test.png', units = 'in', height = 6, width = 6, res = 250, pointsize = 10);
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = FALSE,
+	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
+	plot.type = c('RNA.estimates')
+	);
+dev.off()
 
 }
 \author{Daryl M. Waggott}

@@ -17,7 +17,7 @@ probe.correction.factor <- function(x, anno, Probe.Correction.Factor, verbose = 
 		stop('Probe.Corection: Your data needs probe level background correction.  See documentation regarding Probe.Correction.Factor parameter.');
 		}
 
-	# filter genes with probe level warnings.  this can be use if there is no file for probe correction.
+	# filter genes with probe level warnings.  This is useful if there is no file for probe correction.
 	if ( all(Probe.Correction.Factor == 'filter') ) {
 		if (verbose) {
 			cat('You are removing the following probes from all further analysis:\n\n');
@@ -41,44 +41,54 @@ probe.correction.factor <- function(x, anno, Probe.Correction.Factor, verbose = 
 	# first convert it to a data.frame
 	Probe.Correction.Factor <- as.data.frame(Probe.Correction.Factor, stringsAsFactors = FALSE);
 
+	# rename columns
+	colnames(Probe.Correction.Factor) <- c('Name', 'Probe.Correction.Factor');
+	
+	# check that there are the same numbers of flagged genes
+	if ( sum(grepl('Message', anno$Name, fixed = TRUE)) != nrow(Probe.Correction.Factor) ) {
+		if (verbose) {
+			cat(paste('Number of flagged genes:', sum(grepl('Message', anno$Name, fixed = TRUE)), 'and the Number of rows in Probe.Corection.Factor:',nrow(Probe.Correction.Factor)));
+			cat('\n');
+			}
+		stop('Probe.Corection: The number of flagged genes is different from the number of rows in the Probe.Correction.Factor file.');
+		}
+	
 	# check validity of correction data
 	if ( ncol(Probe.Correction.Factor) != 2 ) {
 		stop('Probe.Correction:  There must be two columns including gene name and correction factor.  See documentation.');
 		}
 	
-	# correct for probe level background
-	if ( ncol(Probe.Correction.Factor) == 2 ) {
-		colnames(Probe.Correction.Factor) <- c('Name', 'Probe.Correction.Factor');
-
-		# remove probe level background flag from the gene names in order to check for matching ids
-		Probe.Correction.Factor$Name <- gsub(' ', '', Probe.Correction.Factor$Name, fixed = TRUE);
-		anno$Name <- gsub(' \\(.+$', '', anno$Name);
-		anno$Name <- gsub(' ', '', anno$Name, fixed = TRUE);
-		rownames(x) <- anno$Name;
-		#anno <- anno[anno$Code.Class != 'Message',];
-		#x <- x[anno$Code.Class != 'Message',];
-
-		# check that the gene names match
-		if ( !all(Probe.Correction.Factor$Name %in% anno$Name) ) {
-			print(Probe.Correction.Factor[rownames(Probe.Correction.Factor) %in% anno$Name,]);
-			stop('Probe.Correction: Not all probes in Probe.Correction.Factor are found in your data. Check the names.');
-			}
-
-		# expand background correction factor to all genes.  i.e. set other genes to 0
-		Probe.Correction.Factor <- merge(anno[,'Name'], Probe.Correction.Factor, by.x = 1, by.y = 1, all.x = TRUE, all.y = TRUE, sort = FALSE);
-		Probe.Correction.Factor[is.na(Probe.Correction.Factor$Probe.Correction.Factor),'Probe.Correction.Factor'] <- 0;
-
-		# sort according to original order
-		rownames(Probe.Correction.Factor) <- Probe.Correction.Factor[,1];
-		Probe.Correction.Factor <- Probe.Correction.Factor[anno$Name,];
-		Probe.Correction.Factor[,1] <- NULL;
-		Probe.Correction.Factor <- as.numeric(Probe.Correction.Factor[,1]);
-
-		# adjust for probe level background correction
-		Probe.Correction.Factor <- sapply(X = x[anno$Name == 'POS_A(128)',], FUN = '*', Probe.Correction.Factor);
-		x <- x - as.matrix(Probe.Correction.Factor);
-		x[x < 0] <- 0;
+	# remove probe level background flag from the gene names in order to check for matching ids
+	Probe.Correction.Factor$Name <- gsub(' ', '', Probe.Correction.Factor$Name, fixed = TRUE);
+	parsed.gene.names <- gsub(' \\(.+$', '', anno$Name);
+	parsed.gene.names <- gsub(' ', '', parsed.gene.names, fixed = TRUE);
+	
+	# check that the gene names match
+	if ( !all(Probe.Correction.Factor$Name %in% parsed.gene.names) ) {
+		print(Probe.Correction.Factor[!Probe.Correction.Factor$Name %in% parsed.gene.names,]);
+		stop('Probe.Correction: Not all probes in Probe.Correction.Factor are found in your data. Check the names.');
 		}
+	
+	# apply parsed gene names to annotation
+	anno$Name <- parsed.gene.names;
+	rownames(x) <- anno$Name;
+
+	# expand background correction factor to all genes.  i.e. set other genes to 0
+	Probe.Correction.Factor <- merge(anno[,'Name'], Probe.Correction.Factor, by.x = 1, by.y = 1, all.x = TRUE, all.y = TRUE, sort = FALSE);
+	Probe.Correction.Factor[is.na(Probe.Correction.Factor$Probe.Correction.Factor),'Probe.Correction.Factor'] <- 0;
+
+	# sort according to original order
+	rownames(Probe.Correction.Factor) <- Probe.Correction.Factor[,1];
+	Probe.Correction.Factor <- Probe.Correction.Factor[anno$Name,];
+	Probe.Correction.Factor[,1] <- NULL;
+	Probe.Correction.Factor <- as.numeric(Probe.Correction.Factor[,1]);
+	
+	# adjust for probe level background correction
+	Probe.Correction.Factor <- sapply(X = x[anno$Name == 'POS_A(128)',], FUN = '*', Probe.Correction.Factor);
+	
+	x <- x - as.matrix(Probe.Correction.Factor);
+	x[x < 0] <- 0;
+	
 		
 	return(
 		list(
