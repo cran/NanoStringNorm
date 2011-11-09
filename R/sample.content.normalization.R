@@ -1,4 +1,9 @@
-sample.content.normalization <- function(x, anno, SampleContent, verbose = TRUE) {
+sample.content.normalization <- function(x, anno, SampleContent = 'none', verbose = TRUE) {
+
+	# check if missing
+	if (is.na(SampleContent)) {
+		stop('SampleContent: SampleContent normalization method cannot be missing.  Try setting to *none*');		
+		}
 
 	# Sample Content Normalization
 	if (SampleContent != 'none') {
@@ -74,7 +79,7 @@ sample.content.normalization <- function(x, anno, SampleContent, verbose = TRUE)
 			}
 
 		else {
-			stop('Unimplemented SampleContent method');
+			stop('SampleContent: Unimplemented SampleContent method');
 			}
 
 		# calc normalization factor

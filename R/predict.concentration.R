@@ -40,10 +40,11 @@ predict.concentration <- function(x, anno, log, verbose = TRUE) {
 
 	colnames(all.endogenous.gene.concentration) <- colnames(x);
 
-	gene.concentration <- cbind(
+	gene.concentration <- data.frame(
 		row.names = anno[grepl('Endogenous', anno$Code.Class),'Name'], 
-		mean.concentration = mean.endogenous.gene.concentration, 
-		all.endogenous.gene.concentration
+		mean.concentration = round(mean.endogenous.gene.concentration, 3), 
+		round(all.endogenous.gene.concentration, 3),
+		stringsAsFactors = FALSE
 		)
 
 	return(gene.concentration);

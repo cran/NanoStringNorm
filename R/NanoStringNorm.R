@@ -1,17 +1,17 @@
-NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeCount = 'none', Background = 'none', SampleContent = 'none', otherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, verbose = TRUE) {
+NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeCount = 'none', Background = 'none', SampleContent = 'none', otherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE) {
 
 	# format the annotation
 	if ( all(is.na(anno)) ) {
 
 		# check that the annotation columns exist
-		if ( colnames(x)[1] == "CodeClass" ) colnames(x)[1] <- "Code.Class";
+		if ( colnames(x)[1] == 'CodeClass' ) colnames(x)[1] <- 'Code.Class';
 
 		if ( any(!c('Code.Class','Name', 'Accession') %in% colnames(x)) ) {
-			stop ("You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.");
+			stop ('NanoStringNorm: You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.');
 			}
 
 		# remove probe level warning message line from data
-		if ( grepl("+++ Functional tests", x[nrow(x),"Name"], fixed = TRUE) ){
+		if ( grepl('+++ Functional tests', x[nrow(x),'Name'], fixed = TRUE) ){
 			x <- x[-nrow(x),];
 			}
 
@@ -23,72 +23,84 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 
 		}
 	else {
+	
+		# make sure there are the same number of rows
+		if ( nrow(anno) != nrow(x) )  {
+			stop('NanoStringNorm: There are different number of rows in the annotation data (anno) and the code count data (x) ');
+			}
 
 		# check that the annotation columns exist
-		if ( colnames(anno)[1] == "CodeClass" ) colnames(anno)[1] <- "Code.Class";
+		if ( colnames(anno)[1] == 'CodeClass' ) colnames(anno)[1] <- 'Code.Class';
 
 		if ( any(!c('Code.Class','Name', 'Accession') %in% colnames(anno)) ) {
-			stop ("You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.");
+			stop ('NanoStringNorm: You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.');
 			}
 
 		# remove probe level warning message line from data
-		if ( grepl("+++ Functional tests", x[nrow(anno),"Name"], fixed = TRUE) ){
-			x <- x[-nrow(anno),];
+		if ( any(grepl('+++ Functional tests', anno[,'Name'], fixed = TRUE)) ){
+			x <- x[-nrow(x),];
+			anno <- anno[-nrow(anno),];
 			}
+
+		# check that anno and x have the same rownames
+		if ( any(rownames(x) != rownames(anno)) ) {
+			stop('NanoStringNorm: Rownames (genes) of the annotation data (anno) do not match the rownames of the coude count data (x).');
+			}
+
+		x <- as.matrix(x);
 
 		x.raw <- data.frame(anno, x);
 		}
 	
-	
 	# start printing analysis log
 	if (verbose) {
 		cat('\n##############################\n');
-		cat(paste('### NanoStringNorm v', packageDescription("NanoStringNorm")$Version, ' ###\n', sep = ''));
+		cat(paste('### NanoStringNorm v', packageDescription('NanoStringNorm')$Version, ' ###\n', sep = ''));
 		cat('##############################\n\n');
 		cat(paste('There are', ncol(x),'samples and', sum(grepl('Endogenous', anno$Code.Class)), 'Endogenous genes \n\n')); 
 		}
-
+	
 	# Check data is a numeric matrix
 	if (any(!is.numeric(x))) {
-		stop('There are character values in your data.  Check that you labelled the annotation columns correctly');
+		stop('NanoStringNorm: There are character values in your data.  Check that you labelled the annotation columns correctly');
 		}
 
 	# Check data in positive
 	if (any(x < 0)) {
-		stop('There are negative values in your data');
+		stop('NanoStringNorm: There are negative values in your data');
 		}
 
 	# Check for Endogenous probes
 	if ( length(grep('Endogenous', anno$Code.Class)) == 0 ) {
-		stop('There are no Endogenous genes in your data');
+		stop('NanoStringNorm: There are no Endogenous genes in your data');
 		}
 
 	# check for Positive Controls
 	if ( CodeCount != 'none' & !any(anno$Code.Class == 'Positive') ) {
-		stop('You cannot do CodeCount Normalization. There are no Positive Controls in your data.');
+		stop('NanoStringNorm: You cannot do CodeCount Normalization. There are no Positive Controls in your data.');
 		}
 
 	# check Housekeeping and Control Genes
 	if ( grepl('housekeeping', SampleContent) & !any(anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping')) ) {
-		stop('You Cannot do SampleContent Normalization. There are no *annotated* Housekeeping / Control genes in your data.');
+		stop('NanoStringNorm: You Cannot do SampleContent Normalization. There are no *annotated* Housekeeping / Control genes in your data.');
 		}
 
 	# Check normalization parameters
 	if ( !CodeCount %in% c('none', 'sum', 'geo.mean') ) {
-		stop('Unrecognized CodeCount Normalization method');
+		stop('NanoStringNorm: Unrecognized CodeCount Normalization method');
 		}
 	if ( !Background %in% c('none', 'mean', 'mean.2sd', 'max') ) {
-		stop('Unrecognized Background Normalization method');
+		stop('NanoStringNorm: Unrecognized Background Normalization method');
 		}
 	if ( !SampleContent %in% c('none', 'housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean', 'top.geo.mean') ) {
-		stop('Unrecognized SampleContent Normalization method');
+		stop('NanoStringNorm: Unrecognized SampleContent Normalization method');
 		}
 	if ( !otherNorm %in% c('none', 'quantile', 'zscore') ) {
-		stop('Unrecognized otherNorm Normalization method');
+		stop('NanoStringNorm: Unrecognized otherNorm Normalization method');
 		}
 
 	# do Probe Correction Factor Normalization
-	output.probe.correction.factor <- NanoStringNorm:::probe.correction.factor(x, anno, Probe.Correction.Factor, verbose);
+	output.probe.correction.factor <- NanoStringNorm:::probe.correction.factor.normalization(x, anno, Probe.Correction.Factor, verbose);
 	anno <- output.probe.correction.factor$anno;
 	x <- output.probe.correction.factor$x;
 	rm(output.probe.correction.factor);
@@ -134,7 +146,12 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 	x <- NanoStringNorm:::output.formatting(x, anno, otherNorm, round.values, log, verbose);
 	
 	# get predicted concentration based on positive controls
-	predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, log, verbose);
+	if (predict.conc == TRUE) { 
+		predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, log, verbose);
+		}
+	else {
+		predicted.concentration <- NA;
+		}
 
 	# output the data as a matrix filtering the annotation and control genes.
 	if ( return.matrix.of.endogenous.probes == TRUE ) {

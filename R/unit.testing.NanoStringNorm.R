@@ -18,7 +18,9 @@
         rngKind = "default",
         rngNormalKind = "default"
         );
+    
     result <- runTestSuite(suite);
+    
     printTextProtocol(result, showDetails=TRUE);
 
     return(result);

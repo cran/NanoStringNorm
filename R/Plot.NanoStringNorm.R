@@ -117,7 +117,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	#############################################################################################
 	### gene. plot the density of the coefficient of variation before and after normalization ###
 	#############################################################################################
-
+	
 	if ('cv' %in% plot.type) {
 
 		# which genes have expression counts greater than one after normalization.  removal helps with some strange values.
@@ -290,7 +290,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 		# plot the data
 		plot(
 			x = raw.sample.Mean,
-			y = x$sample.summary.stats.norm$sample.Missing,
+			y = x$sample.summary.stats.norm$Sample.Missing,
 			xlab = 'Mean of Samples in Raw Data',
 			ylab = 'Proportion of Missing in Normalized Data',
 			main = if (title == TRUE) 'Sample: Missing' else NA,
@@ -300,9 +300,9 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			);
 		
 		# what samples are outliers for missing
-		outlier.missing <- (x$sample.summary.stats.norm$sample.Missing - mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE)) / sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
-		outlier.missing.threshold.pos <- 3 * sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
-		outlier.missing.threshold.neg <- -3 * sd(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$sample.Missing, na.rm = TRUE);
+		outlier.missing <- (x$sample.summary.stats.norm$Sample.Missing - mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE)) / sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+		outlier.missing.threshold.pos <- 3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+		outlier.missing.threshold.neg <- -3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
 		
 		# what samples are outliers for mean
 		outlier.mean <- (raw.sample.Mean - mean(raw.sample.Mean, na.rm = TRUE)) / sd(raw.sample.Mean, na.rm = TRUE);
@@ -316,7 +316,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			if (any(abs(outlier.missing) > 3)) {
 				text(
 					x = raw.sample.Mean[abs(outlier.missing) > 3], 
-					y = x$sample.summary.stats.norm$sample.Missing[abs(outlier.missing) > 3], 
+					y = x$sample.summary.stats.norm$Sample.Missing[abs(outlier.missing) > 3], 
 					labels = rownames(x$sample.summary.stats.norm[abs(outlier.missing) > 3,]), 
 					pos = c(1,2,3,4),
 					col = 'grey30',
@@ -328,7 +328,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			if (any(abs(outlier.mean) > 3) & !'samples' %in% names(label.ids)) {
 				text(
 					x = raw.sample.Mean[abs(outlier.mean) > 3], 
-					y = x$sample.summary.stats.norm$sample.Missing[abs(outlier.mean) > 3], 
+					y = x$sample.summary.stats.norm$Sample.Missing[abs(outlier.mean) > 3], 
 					labels = rownames(x$sample.summary.stats.norm[abs(outlier.mean) > 3,]), 
 					pos = c(1,2,3,4),
 					col = 'grey30',
@@ -341,7 +341,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
 			text(
 				x = raw.sample.Mean[to.label], 
-				y = x$sample.summary.stats.norm$sample.Missing[to.label], 
+				y = x$sample.summary.stats.norm$Sample.Missing[to.label], 
 				labels = rownames(x$sample.summary.stats.norm[to.label,]), 
 				pos = c(1,2,3,4),
 				col = 'grey30',
@@ -354,7 +354,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 		abline(h = outlier.missing.threshold.neg, lty = 2, lwd = .5, col = 'grey30');
 		abline(v = outlier.mean.threshold.pos, lty = 2, lwd = .5, col = 'grey30');
 		abline(v = outlier.mean.threshold.neg, lty = 2, lwd = .5, col = 'grey30');
-		abline(lowess(x = raw.sample.Mean, y = x$sample.summary.stats.norm$sample.Missing), lwd = 4, col = 'grey60');
+		abline(lowess(x = raw.sample.Mean, y = x$sample.summary.stats.norm$Sample.Missing), lwd = 4, col = 'grey60');
 		box(col = 'grey60', lwd = 3);
 
 		}
@@ -459,9 +459,9 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			batch.cex[batch.data$p.ttest > 0.05] <- 1;
 			#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
 			#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
-
+			
 			batch.diff <- batch.data$mean.grp2 - batch.data$mean.grp1;
-
+			
 			plot(
 				x = 1:n.traits,
 				y = batch.diff,
@@ -474,7 +474,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				);
 
 			axis(1, at = 1:n.traits, label = NA, col.axis = 'grey30');
-
+			
 			if (length(trait.names) > 10) {
 				if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
 					if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);

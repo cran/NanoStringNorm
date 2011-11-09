@@ -1,13 +1,17 @@
-output.formatting <- function(x, anno, otherNorm, round.values, log, verbose = TRUE) {
-	
+output.formatting <- function(x, anno, otherNorm = 'none', round.values = FALSE, log = FALSE, verbose = TRUE) {
+
+	if ( (!is.logical(round.values) | !is.logical(log)) | is.na(round.values) | is.na(log) ) {
+		stop('Formatting: Round and Log need to be TRUE or FALSE\n\n');
+		}
+
 	# round the data to discrete values.
 	if (round.values == TRUE) {
 		x <- round(x, digits = 0);
 		}
 
 	# shouldn't be log-transforming z-scores
-	if (verbose & log == TRUE & otherNorm == 'zscore') {
-		cat('log: log-transformation of z-scores is intentionally not implemented\n\n');
+	if (log == TRUE & otherNorm == 'zscore') {
+		stop('Formatting: log-transformation of z-scores is intentionally not implemented.  Set log = FALSE.\n\n');
 		}
 
 	# log2 transformation
@@ -25,7 +29,7 @@ output.formatting <- function(x, anno, otherNorm, round.values, log, verbose = T
 			}
 
 		# log-transform (base2 by default)
-		x <- log2(x);
+		x <- signif(log2(x), 4);
 		}
 
 	return(x);

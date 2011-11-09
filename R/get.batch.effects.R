@@ -104,7 +104,7 @@ get.batch.effects <- function(x, anno = NA, log, traits, sample.summary.stats) {
 		p.ttest = as.numeric(batch.effects[,5])
 		);
 	names(batch.effects) <- c("trait.name", "sample.statistics", "mean.grp1", "mean.grp2", "p.ttest");
-	batch.effects$sample.statistics <- gsub('sample.', '', batch.effects$sample.statistics, fixed = TRUE);
+	batch.effects$sample.statistics <- gsub('Sample.', '', batch.effects$sample.statistics, fixed = TRUE);
 	batch.effects[batch.effects$sample.statistics == 'pos.controls', 'sample.statistics'] <- 'PositiveControls';
 	batch.effects[batch.effects$sample.statistics == 'background.level', 'sample.statistics'] <- 'NegativeControls';
 	batch.effects[batch.effects$sample.statistics == 'rna.content', 'sample.statistics'] <- 'RNA Content';

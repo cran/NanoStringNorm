@@ -1,4 +1,9 @@
-other.normalization <- function(x, anno, otherNorm, verbose = TRUE) {
+other.normalization <- function(x, anno, otherNorm = 'none', verbose = TRUE) {
+
+	# check if missing
+	if (is.na(otherNorm)) {
+		stop('otherNorm: otherNorm normalization method cannot be missing.  Try setting to *none*');		
+		}
 
 	# run additional normalization functions
 	if (otherNorm != 'none') {
@@ -38,8 +43,8 @@ other.normalization <- function(x, anno, otherNorm, verbose = TRUE) {
 			# set ranks to NA if NA in the original data
 			x.rank[is.na(x.na)] <- NA;
 
-			# convert the ranks into probabilities to use quantile functio
-			get.prob.from.rank <- function(xval) ( xval - 1 ) / (length(na.omit(xval)) - 1);
+			# convert the ranks into probabilities to use quantile function
+			get.prob.from.rank <- function(xval) ( xval - 1 ) / ( length(na.omit(xval)) - 1 );
 
 			x.rank.prob <- apply(
 				X = x.rank,
@@ -62,7 +67,7 @@ other.normalization <- function(x, anno, otherNorm, verbose = TRUE) {
 			x[is.na(x)] <- 0;
 			}
 
-		# z-score normalization
+		# z-score (standard normal) normalization
 		else if (otherNorm == 'zscore') {
 			x <- apply(
 				X = x,
@@ -70,9 +75,19 @@ other.normalization <- function(x, anno, otherNorm, verbose = TRUE) {
 				FUN = scale
 				);
 			}
+		
+		# rank (forced normal) normalization
+		else if (otherNorm == 'rank') {
+			x <- apply(
+				X = x,
+				MARGIN = 2,
+				FUN = function(y) qnorm (p = (rank(y) -.5)/length(y))
+				);
+			}
+
 		# give an error if the method is not known
 		else {
-			stop('Unimplemented otherNorm method');
+			stop('OtherNorm: Unimplemented otherNorm method');
 			}
 		}
 

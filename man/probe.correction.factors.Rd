@@ -1,9 +1,9 @@
-\name{probe.correction.factor}
-\title{probe.correction.factor}
-\alias{probe.correction.factor}
+\name{probe.correction.factor.normalization}
+\title{probe.correction.factor.normalization}
+\alias{probe.correction.factor.normalization}
 \description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
 \usage{
-probe.correction.factor(x, anno, Probe.Correction.Factor, verbose = TRUE);
+probe.correction.factor.normalization(x, anno, Probe.Correction.Factor, verbose = TRUE);
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an XLS spreadsheet.  If anno is NA then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}

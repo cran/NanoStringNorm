@@ -1,4 +1,4 @@
-test_probe.correction.factor <- function() {
+test_probe.correction.factor.normalization <- function() {
 	
 	# constructing the standard test matrix
 	Code.Class <- c(rep('Positive', 2), rep('Negative', 2), rep('Housekeeping',2), rep('Endogenous1',3));
@@ -17,57 +17,73 @@ test_probe.correction.factor <- function() {
 	anno.message <- test.data.message[,c('Code.Class', 'Name', 'Accession')];
 	x.message <- as.matrix(test.data.message[,c(-1, -2, -3)]);
 	
-	# constructing the probe correction factor
+	# constructing the probe.correction.factor.normalization
 	Probe <- c('hsa-let-7a', 'hsa-let-7c'); 
 	Correction.Factor <- c(0.291, 0.648); 
 	Probe.Correction.Factor <- data.frame(Probe = Probe, Correction.Factor = Correction.Factor);
 	
+	# Case 0: bad input
+	check0 <- checkException(probe.correction.factor.normalization(x=x, anno=anno, Probe.Correction.Factor = NA));
+
 	# Case 1: Probe Correction Factor is NA, there are no genes with messages. Should return the original data matrix
-	checkEquals(list(x=x, anno=anno), probe.correction.factor(x=x, anno=anno, Probe.Correction.Factor = NA)); 
+	check1 <- checkEquals(list(x=x, anno=anno), probe.correction.factor.normalization(x=x, anno=anno, Probe.Correction.Factor = 'none')); 
 
 	# Case 2: Probe Correction Factor is NA, there are some genes with messages. Should stop and give exceptions
-	checkException(probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = NA));
+	check2 <- checkException(probe.correction.factor.normalization(x=x.message, anno=anno.message, Probe.Correction.Factor = 'none'));
 
 	# Case 3: Probe Correction Factor containing "filter" as its only element, it is a vector. Should filter the genes with messages.  
-	checkEquals(list(x=x.message[-c(7,9),], anno=anno.message[-c(7,9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = c('filter'))); 
+	check3 <- checkEquals(list(x=x.message[-c(7,9),], anno=anno.message[-c(7,9),]), probe.correction.factor.normalization(x=x.message, anno=anno.message, Probe.Correction.Factor = c('filter'))); 
 
 	# Case 4: Probe Correction Factor containing "filter" as its only element, it is a matrix. Should filter the genes with messages. FAILS** 
-	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.matrix('filter'))); 
+	#check4 <- checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor.normalization(x=x.message, anno=anno.message, Probe.Correction.Factor = as.matrix('filter'))); 
 
 	# Case 5: Probe Correction Factor containing "filter" as its only element, it is a data frame. Should filter the genes with messages. FAILS** 
-	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = as.data.frame('filter'))); 
+	#check5 <-  checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor.normalization(x=x.message, anno=anno.message, Probe.Correction.Factor = as.data.frame('filter'))); 
 
 	# Case 6: Probe Correction Factor containing "filter", has more than one element, it is a vector. Should filter the genes with messages. FAILS** 
-	#checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor(x=x.message, anno=anno.message, Probe.Correction.Factor = rep('filter', 2))); 
+	#check6 <- checkEquals(list(x=x.message[c(-7, -9),], anno=anno.message[c(-7, -9),]), probe.correction.factor.normalization(x=x.message, anno=anno.message, Probe.Correction.Factor = rep('filter', 2))); 
 
 	# Case 7: Standard Case - Probe Correction Factor list, it is a data frame with 2 columns. All probes in correction file are found in data.  
-	checkEquals(probe.correction.expected.1, probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = test.1)); 
+	check7 <- checkEquals(probe.correction.expected.1, probe.correction.factor.normalization(NS.8, anno=NA, Probe.Correction.Factor = test.1)); 
 
 	# Case 8: Same as above, BUT not all correction file probes are found in the data. 
-	checkException(probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = test.2)); 
+	check8 <- checkException(probe.correction.factor.normalization(NS.8, anno=NA, Probe.Correction.Factor = test.2)); 
 
 	# Case 9: Probe Correction Factor containing an element other than "filter", in this case "testing", it is a vector. Should give error messages. 
-	checkException(probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = c('testing'))); 
+	check9 <- checkException(probe.correction.factor.normalization(NS.8, anno=NA, Probe.Correction.Factor = c('testing'))); 
 
 	# Case 10: Probe Correction Factor has missing values (NA instead of a numerical value for the Correction.Factor). Should return error messages. FAILS**(Ignores NA) 
-	checkException(probe.correction.factor(NS.8, anno=NA, test.3)); 
+	check10 <- checkException(probe.correction.factor.normalization(NS.8, anno=NA, test.3)); 
 
 	# Case 11: When the probe POS_A(128) is missing. In this case, should return error messages. 
-	checkException(probe.correction.factor(NS.8[-1,], anno=NA, test.1)); 
+	check11 <- checkException(probe.correction.factor.normalization(NS.8[-1,], anno=NA, test.1)); 
 
 	# Case 12: When the probe contains '128' but instead refers to an another number (e.g. POS_A(61285)). In this case, should still return error messages. 
-	checkException(probe.correction.factor(probe.correction.matrix, anno=NA, test.1)); 
+	check12 <- checkException(probe.correction.factor.normalization(probe.correction.matrix, anno=NA, test.1)); 
 
 	# Case 13: When '(+++ See Message Below)' appears in positive controls, should return error messages.
-	checkException(probe.correction.factor(probe.correction.matrix.2, anno=NA, test.4)); 
+	check13 <- checkException(probe.correction.factor.normalization(probe.correction.matrix.2, anno=NA, test.4)); 
 
 	# Case 14: When '(+++ See Message Below)' appears in negative controls, should return error messages.
-	checkException(probe.correction.factor(probe.correction.matrix.3, anno=NA, test.5)); 
+	check14 <- checkException(probe.correction.factor.normalization(probe.correction.matrix.3, anno=NA, test.5)); 
 
 	# Case 15: When '(+++ See Message Below)' appears in housekeeping genes, should return error messages.
-	checkException(probe.correction.factor(probe.correction.matrix.4, anno=NA, test.6)); 
+	check15 <- checkException(probe.correction.factor.normalization(probe.correction.matrix.4, anno=NA, test.6)); 
 
 	# Case 16: The special case where the probe corrected values are negative, should change it back to 0. FAILS**
-	# checkEquals(probe.correction.expected.2, probe.correction.factor(NS.8, anno=NA, Probe.Correction.Factor = test.7));
+	 #check16 <- checkException(probe.correction.expected.2, probe.correction.factor.normalization(NS.8, anno=NA, Probe.Correction.Factor = test.7));
+
+	checks <- c(
+		check1 = check1, check2 = check2, check3 = check3,
+		#check4 = check4, check5 = check5, check6 = check6,check7 = check7,check16 = check16 
+		check8 = check8, check9 = check9, check10 = check10, check11 = check11, check12 = check12, 
+		check13 = check13, check14 = check14, check15 = check15
+		);
+
+	checkEquals(1,2);
+
+	if (!all(checks)) print(checks[checks == FALSE]);
+
+	return(all(checks))
 
     }

@@ -26,9 +26,9 @@ get.sample.summary.stats <- function(x, anno) {
 	return(
 		data.frame(
 			row.names = names(x),
-			sample.Mean = sample.mean,
-			sample.SD = sample.sd,
-			sample.Missing = sample.proportion.missing
+			Sample.Mean = sample.mean,
+			Sample.SD = sample.sd,
+			Sample.Missing = sample.proportion.missing
 			)
 		);
 	}

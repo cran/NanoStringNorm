@@ -1,0 +1,35 @@
+test.check.trait.values <- function(date.input = '2011-11-04', date.checked.output = '2011-11-04'){
+	
+	# go to test data directory
+	path.to.input.files <- '../NanoStringNorm/extdata/input_function_files/';
+	path.to.output.files <- '../NanoStringNorm/extdata/output_function_files/';
+
+	# read input files
+	x             <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_matrix.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+	anno          <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_anno.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+	trait         <- read.table(paste(path.to.input.files, '2011-10-01_NanoString_mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+	
+	### check1 - test good input
+	check1.1 <- checkTrue(NanoStringNorm:::check.trait.values(x, anno, log = TRUE, traits = trait));
+
+	### check2 - check bad input
+	
+	# not 0,1,2 values
+	trait2.1 <- trait; 
+	trait2.1[1,2] <- 0; 
+	check2.1 <- checkException(NanoStringNorm:::check.trait.values(x, anno, log = TRUE, traits = trait2.1));
+	
+	# different number of rows and column
+	trait2.2 <- trait[-1,];
+	check2.2 <- checkException(NanoStringNorm:::check.trait.values(x, anno, log = TRUE, traits = trait2.2));
+
+	# row order of trait does not match column order of NSN
+	trait2.3 <- trait[order(rownames(trait)),];
+	check2.3 <- checkException(NanoStringNorm:::check.trait.values(x, anno, log = TRUE, traits = trait2.3));
+
+	checks <- c(check1.1 = check1.1, check2.1 = check2.1, check2.2 = check2.2, check2.3 = check2.3);
+	if (!all(checks)) print(checks[checks == FALSE]);
+
+	return(all(checks));
+
+	}

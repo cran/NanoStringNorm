@@ -1,4 +1,9 @@
-background.normalization <- function(x, anno, Background, verbose = TRUE) {
+background.normalization <- function(x, anno, Background = 'none', verbose = TRUE) {
+
+	# check if missing
+	if (is.na(Background)) {
+		stop('Background: Background normalization method cannot be missing.  Try setting to *none*');		
+		}
 
 	# Background Correction
 	if (Background != 'none') {
@@ -35,7 +40,7 @@ background.normalization <- function(x, anno, Background, verbose = TRUE) {
 
 		# give an error if an unknown method is used
 		else {
-			stop('Unimplemented Background method');
+			stop('Background: Unimplemented Background method');
 			}
 
 		# flag any samples that are outliers
@@ -75,7 +80,9 @@ background.normalization <- function(x, anno, Background, verbose = TRUE) {
 		samples.proportion.missing <- data.frame(row.names = colnames(x), proportion.missing = samples.proportion.missing);
 		#colnames(samples.proportion.missing) <- 'proportion.missing';
 
-		cat(paste('Background: After correction' , sum(samples.proportion.missing <= .90), 'samples and', sum(genes.proportion.missing <= .90), 'Endogenous genes have less than 90% missing. \n\n'));
+		if (verbose == TRUE) {
+			cat(paste('Background: After correction' , sum(samples.proportion.missing <= .90), 'samples and', sum(genes.proportion.missing <= .90), 'Endogenous genes have less than 90% missing. \n\n'));
+			}
 
 		if ( any(samples.proportion.missing > 0.9) ) {
 			print(signif(subset(samples.proportion.missing, samples.proportion.missing > 0.9,),3));

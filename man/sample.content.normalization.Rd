@@ -3,7 +3,7 @@
 \alias{sample.content.normalization}
 \description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
 \usage{
-sample.content.normalization(x, anno, SampleContent, verbose = TRUE);
+sample.content.normalization(x, anno, SampleContent = 'none', verbose = TRUE);
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an XLS spreadsheet.  If anno is NA then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}

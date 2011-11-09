@@ -1,4 +1,9 @@
-code.count.normalization <- function(x, anno, CodeCount, verbose = TRUE) {
+code.count.normalization <- function(x, anno, CodeCount = 'none', verbose = TRUE) {
+
+	# check if missing
+	if (is.na(CodeCount)) {
+		stop('CodeCount: CodeCount normalization method cannot be missing.  Try setting to *none*');		
+		}
 
 	# Code Count Normalization using sum: take sum of positive controls per sample
 	if ( CodeCount == 'sum' ) { 
@@ -19,7 +24,7 @@ code.count.normalization <- function(x, anno, CodeCount, verbose = TRUE) {
 		}
 		
 	else {
-		stop('Unimplemented CodeCount normalization method');
+		stop('CodeCount: Unimplemented CodeCount normalization method');
 		}
 	
 	# calculate the normalization factor as the ratio of mean vs sample values

@@ -3,7 +3,21 @@
 \alias{NanoStringNorm}
 \description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
 \usage{
-NanoStringNorm(x, anno = NA, Probe.Correction.Factor = 'none', CodeCount = 'none', Background = 'none', SampleContent = 'none', otherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, verbose = TRUE);
+NanoStringNorm(
+	x, 
+	anno = NA, 
+	Probe.Correction.Factor = 'none', 
+	CodeCount = 'none', 
+	Background = 'none', 
+	SampleContent = 'none', 
+	otherNorm = 'none', 
+	round.values = FALSE, 
+	log = FALSE, 
+	return.matrix.of.endogenous.probes = FALSE, 
+	traits = NA, 
+	predict.conc = FALSE,
+	verbose = TRUE
+	);
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an XLS spreadsheet.  If anno is NA then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}
@@ -17,6 +31,7 @@ NanoStringNorm(x, anno = NA, Probe.Correction.Factor = 'none', CodeCount = 'none
   \item{log}{Should a log2 transformation of the data be used.  Taking the log may help distributional assumptions and consistency with PCR based methods of calculating fold change.}
   \item{return.matrix.of.endogenous.probes}{If true a matrix of normalized endogenous code counts is returned.  Annotation columns and control probes are removed.  This could be useful if you the output is being used directly for downstream analysis.  By default this is FALSE and list of objects including descriptive and diagnostics.}
   \item{traits}{A vector or matrix of binary traits such as normal/tumour status.  Each trait may only contain 1,2 or NA similar to the numeric status of factors.  T-tests p-values and Fold-Change in terms of the '2' category are presented.  The results can be displayed using build in plotting functions.}
+  \item{predict.conc}{Should the predicted concentration values be returned.  Defaults to FALSE.  The predicted concentrations are based on a fitted model between the observed counts and the expected concentration (fM).  Counts are replaced by predicted concentrations from a model using each samples normalized data. In addition a final column is added which predicts the concentration using the mean of all samples.}
   \item{verbose}{Output comments on run-status}
 }
 \details{
@@ -42,13 +57,14 @@ The NanoString assay is described in the paper:
 \note{Future updates to include more informative diagnostic plots, trait specific normalization and replicate merging.}
 \examples{
 
-### 1 Normalize mRNA and output a matrix of normalized counts ###
+### 1 Normalize mRNA and output a matrix of normalized counts #################
 
 # load data
 data(NanoString);
 
 # specifiy housekeeping genes in annotation 
-NanoString.mRNA[NanoString.mRNA$Name \%in\% c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
+NanoString.mRNA[NanoString.mRNA$Name \%in\% 
+	c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
 
 # normalize
 NanoString.mRNA.norm <- NanoStringNorm(
@@ -62,7 +78,8 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	return.matrix.of.endogenous.probes = TRUE
 	);
 
-### 2 include a trait for differential expression and batch effect evaluation.  A list of diagnostic objects is output. ###
+### 2 include a trait for differential expression and batch effect evaluation  #
+### 	A list of diagnostic objects is output.                                #
 
 # Define a traits based on strain
 sample.names <- names(NanoString.mRNA)[-c(1:3)];
@@ -79,10 +96,15 @@ trait.strain <- data.frame(
 	strain3 = strain3
 	);
 
+# Split the input into separate annotation and count input  ###################
+
+NanoString.mRNA.anno <- NanoString.mRNA[,c(1:3)];
+NanoString.mRNA.data <- NanoString.mRNA[,-c(1:3)];
+
 # Normalize
 NanoString.mRNA.norm <- NanoStringNorm(
-	x = NanoString.mRNA,
-	anno = NA,
+	x = NanoString.mRNA.data,
+	anno = NanoString.mRNA.anno,
 	CodeCount = 'sum',
 	Background = 'mean.2sd',
 	SampleContent = 'top.geo.mean',
@@ -92,9 +114,9 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	return.matrix.of.endogenous.probes = FALSE
 	);
 
-### 3 plot results ###
+### 3 plot results ############################################################
 
-# Plot all the plots as PDF report.  See help on Plot.NanoStringNorm for further examples.
+# Plot all the plots as PDF report.  See help on Plot.NanoStringNorm for examples
 pdf('NanoStringNorm_Example_Plots_All.pdf')
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,

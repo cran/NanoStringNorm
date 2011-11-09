@@ -1,4 +1,4 @@
-probe.correction.factor <- function(x, anno, Probe.Correction.Factor, verbose = TRUE) {
+probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Factor, verbose = TRUE) {
 
 	# first convert it to a matrix
 	Probe.Correction.Factor <- as.matrix(Probe.Correction.Factor);

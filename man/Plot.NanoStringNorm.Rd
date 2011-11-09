@@ -3,7 +3,16 @@
 \alias{Plot.NanoStringNorm}
 \description{Do some diagnostic and descriptive plots}
 \usage{
-Plot.NanoStringNorm(x, plot.type = 'norm.factors', samples = NA, trait = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE)
+Plot.NanoStringNorm(
+	x,
+	plot.type = 'norm.factors',
+	samples = NA,
+	trait = NA,
+	label.best.guess = TRUE,
+	label.ids = NA,
+	title = TRUE
+	);
+
 }
 \arguments{
   \item{x}{An object of class NanoStringNorm i.e. the list output of NanoStringNorm}
@@ -36,7 +45,8 @@ The positive.control plots compare the expected concentration with observed coun
 data(NanoString);
 
 # specifiy housekeeping genes in annotation 
-NanoString.mRNA[NanoString.mRNA$Name \%in\% c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
+NanoString.mRNA[NanoString.mRNA$Name \%in\% 
+	c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
 
 # setup the traits
 sample.names <- names(NanoString.mRNA)[-c(1:3)];
@@ -76,7 +86,8 @@ Plot.NanoStringNorm(
 dev.off()
 
 # publication quality tiff volcano plot
-tiff('NanoStringNorm_Example_Plots_Volcano.tiff', units = 'in',  height = 6, width = 6, compression = 'lzw', res = 1200, pointsize = 10);
+tiff('NanoStringNorm_Example_Plots_Volcano.tiff', units = 'in',  height = 6, 
+	width = 6, compression = 'lzw', res = 1200, pointsize = 10);
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = TRUE,
@@ -86,7 +97,8 @@ Plot.NanoStringNorm(
 dev.off()
 
 # all plots as seperate files output for a presentation
-png('NanoStringNorm_Example_Plots_\%03d.png', units = 'in',  height = 6, width = 6, res = 250, pointsize = 10);
+png('NanoStringNorm_Example_Plots_\%03d.png', units = 'in',  height = 6,
+	width = 6, res = 250, pointsize = 10);
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = TRUE,
@@ -95,11 +107,13 @@ Plot.NanoStringNorm(
 dev.off()
 
 # user specified labelling with optimal resolution for most digital displays
-png('NanoStringNorm_Example_Plots_Normalization_Factors.png', units = 'in', height = 6, width = 6, res = 250, pointsize = 10);
+png('NanoStringNorm_Example_Plots_Normalization_Factors.png', units = 'in', height = 6,
+	width = 6, res = 250, pointsize = 10);
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = FALSE,
-	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
+	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), 
+		samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
 	plot.type = c('norm.factors')
 	);
 dev.off()
@@ -109,7 +123,8 @@ png('test.png', units = 'in', height = 6, width = 6, res = 250, pointsize = 10);
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = FALSE,
-	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
+	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), 
+		samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
 	plot.type = c('RNA.estimates')
 	);
 dev.off()

@@ -1,0 +1,80 @@
+test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-04'){
+	
+	# go to test data directory
+	path.to.input.files <- '../NanoStringNorm/extdata/input_function_files/';
+	path.to.output.files <- '../NanoStringNorm/extdata/output_function_files/';
+
+	# read input files
+	x             <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_matrix.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+	anno          <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_anno.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+	trait         <- read.table(paste(path.to.input.files, '2011-10-01_NanoString_mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
+
+	# read *checked output*
+	checked.output.NSN.none <- dget(file = paste(path.to.output.files, date.checked.output, '_NanoString_mRNA_TCDD_NSN_none.txt', sep = ''));
+	checked.output.NSN.none.matrix <- dget(file = paste(path.to.output.files, date.checked.output, '_NanoString_mRNA_TCDD_NSN_none_matrix.txt', sep = ''));
+	checked.output.NSN.random <- dget(file = paste(path.to.output.files, date.checked.output, '_NanoString_mRNA_TCDD_NSN_random.txt', sep = ''));
+
+	# run function to get *test output* 
+	test.output.NSN.none   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE);
+	test.output.NSN.none.matrix   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE, return.matrix.of.endogenous.probes = TRUE);
+
+	test.output.NSN.random <- NanoStringNorm:::NanoStringNorm(
+		x = x, 
+		anno = anno, 
+		CodeCount = 'geo.mean', 
+		Background = 'mean.2sd', 
+		SampleContent = 'top.geo.mean', 
+		log = TRUE, 
+		round = TRUE, 
+		verbose = FALSE,
+		predict.conc = TRUE
+		);
+
+	test.output.NSN.random.no.anno <- NanoStringNorm:::NanoStringNorm(
+		x = data.frame(anno, x), 
+		anno = NA, 
+		CodeCount = 'geo.mean', 
+		Background = 'mean.2sd', 
+		SampleContent = 'top.geo.mean', 
+		log = TRUE, 
+		round = TRUE, 
+		verbose = FALSE,
+		predict.conc = TRUE
+		);
+	
+	### check1 - compare checked output == test output
+	check1.1 <- checkEquals(checked.output.NSN.none, test.output.NSN.none);
+	check1.2 <- checkEquals(checked.output.NSN.none.matrix, test.output.NSN.none.matrix);
+	check1.3 <- checkEquals(checked.output.NSN.random, test.output.NSN.random);
+	check1.4 <- checkEquals(checked.output.NSN.random, test.output.NSN.random.no.anno);
+
+	### check2 - check garbage input
+	
+	# no anno fields
+	check2.1 <- checkException(NanoStringNorm:::NanoStringNorm(x, anno = NA, verbose = FALSE));
+
+	# bad field names for annotation
+	x.check2.2 <- data.frame(anno, x, stringsAsFactors = FALSE);
+	names(x.check2.2)[1] <- 'Code__Class';
+	check2.2 <- checkException(NanoStringNorm:::NanoStringNorm(x.check2.2, anno = NA, verbose = FALSE));
+
+	# put annotation at end of data
+	#x.check2.3 <- data.frame(x, anno, stringsAsFactors = FALSE);
+	#test.check2.3 <- NanoStringNorm:::NanoStringNorm(x.check2.3, anno = NA, verbose = FALSE);
+	#check2.3 <- checkEquals(checked.output.NSN.none, test.check2.3);
+
+	# missing endogenous
+
+	# missing positive
+
+	# missing HK
+
+	# missing negative
+	
+	checks <- c(check1.1 = check1.1, check1.2 = check1.2, check2.1 = check2.1, check2.2 = check2.2);
+	
+	if (!all(checks)) print(checks[checks == FALSE]);
+
+	return(all(checks))
+
+	}

@@ -1,4 +1,4 @@
-check.trait.values <- function(x, anno = NA, log, traits) {
+check.trait.values <- function(x, anno = NA, log, traits = NA) {
 
 	# attempt to convert traits into a matrix
 	traits <- as.matrix(traits);
@@ -9,7 +9,7 @@ check.trait.values <- function(x, anno = NA, log, traits) {
 	# check if input is a single value specifically if NA
 	if ( all(dim(traits) == 1) ) {
 		if (is.na(traits)) {
-			traits.ok <- FALSE;check.trait.values
+			traits.ok <- FALSE;
 			}
 		else {
 			stop("Trait: Unrecognized trait input.");
@@ -24,8 +24,15 @@ check.trait.values <- function(x, anno = NA, log, traits) {
 			stop("Trait: Only numeric variables with values NA, 1 or 2 are accepted.  The effect is terms of the second level i.e. disease.");
 			}
 		# check if traits have the right ids in the right order
-		if ( nrow(traits) == ncol(x) & all(rownames(traits) == colnames(x)) ) {
-			traits.ok <- TRUE
+		if ( nrow(traits) == ncol(x) ) {
+			traits.ok <- TRUE;
+			}
+		else {
+			stop("Trait: The number of traits is different form the number of samples.");
+			}
+		# check that that order of the sample and tratis matches	
+		if (all(rownames(traits) == colnames(x)) ) {
+			traits.ok <- TRUE;
 			}
 		else {
 			stop("Trait: Values must include the same samples as the NanoString input data.  Confirm that traits have rownames in the same order as the columns in the expression data.")

@@ -3,7 +3,7 @@
 \alias{output.formatting}
 \description{This function is used internally to format the NanoStringNorm output}
 \usage{
-output.formatting(x, anno, otherNorm, round.values, log, verbose = TRUE);
+output.formatting(x, anno, otherNorm = 'none', round.values= FALSE, log = FALSE, verbose = TRUE);
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an XLS spreadsheet.  If anno is NA then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}

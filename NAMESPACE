@@ -1,6 +1,6 @@
 export(
 	'NanoStringNorm',
-	'probe.correction.factor',
+	'probe.correction.factor.normalization',
 	'code.count.normalization',
 	'background.normalization',
 	'sample.content.normalization',
