@@ -1,0 +1,21 @@
+\name{read.xls.RCC}
+\title{read.xls.RCC}
+\alias{read.xls.RCC}
+\description{A function to read the raw counts from the RCC excel spreadsheet output by the nCounter platform.}
+\usage{
+read.xls.RCC(xls, sheet = 1, perl)
+}
+\arguments{
+  \item{xls}{The excel spreadsheet output by nCounter.  This should be a string pointing to the desired file.}
+  \item{sheet}{The worksheet that contains the raw counts.  Make sure to check that you are using the worksheet with the "raw" counts and not something that has been processed.  The name of the correct worksheet usually has "RCC" in it but not "norm".  The input is an integer and it defaults to 1 or the first worksheet. }
+  \item{perl}{The path to a perl binary.  This does not need to be specified if perl is in your PATH}
+}
+
+\value{
+Returns a list with two components.  The first is the header information which contains sample IDs and diagnostic information on the quality of the samples.  The second is the count data and can be directly used in the input to NanoStringNorm.
+}
+\author{Daryl M. Waggott}
+\keyword{NanoString}
+\keyword{Normalization}
+\keyword{mRNA}  
+\keyword{miRNA}

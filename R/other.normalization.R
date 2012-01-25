@@ -1,5 +1,4 @@
-other.normalization <- function(x, anno, otherNorm = 'none', verbose = TRUE) {
-
+other.normalization <- function(x, anno, otherNorm = 'none', verbose = TRUE) { 
 	# check if missing
 	if (is.na(otherNorm)) {
 		stop('otherNorm: otherNorm normalization method cannot be missing.  Try setting to *none*');		
@@ -90,6 +89,7 @@ other.normalization <- function(x, anno, otherNorm = 'none', verbose = TRUE) {
 			stop('OtherNorm: Unimplemented otherNorm method');
 			}
 		}
-
+	
+	rownames(x) <- anno$Name;
 	return(x);
 	}

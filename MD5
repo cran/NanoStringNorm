@@ -1,6 +1,6 @@
-0d8ebfd36d72899f3e9a1ecd8f22fcc1 *DESCRIPTION
-85adff8e3ed9eba2e7cabc6d5a6ea0b6 *NAMESPACE
-13316a310172ca9236688a54144be103 *R/NanoStringNorm.R
+e21f4c7ce29ed60c99a2b96566f348ef *DESCRIPTION
+28552d7828cdecf37326c525c5bd4537 *NAMESPACE
+fc6a40c2bd45fad779fada481e3ead06 *R/NanoStringNorm.R
 29cfc7c65a8ad98e0a17b8852573d3d6 *R/Plot.NanoStringNorm.R
 579e4a180fac5cbfe686f958cb660345 *R/background.normalization.R
 6f40135411631a3a74b8081072b6f637 *R/check.trait.values.R
@@ -13,10 +13,11 @@
 aff0ce6c8b1dbc61f8078f14b0157b4b *R/get.sample.summary.stats.R
 2fbdf06dd43d79dfc7e083722993caea *R/get.trait.summary.stats.R
 5857789977d68f054031ea128a37ccc7 *R/get.ttest.and.foldchange.R
-99d7e99310f8fa7010ddacecf7da6957 *R/other.normalization.R
+d0a5a6bec015220e7a08a663ac55eb33 *R/other.normalization.R
 2419335119390ae2e31d2a6fbd0f7d43 *R/output.formatting.R
 ffc42c8e4401dba8741a0c41dff7162c *R/predict.concentration.R
 31b0ad11345f6faee452c02a2aa4895c *R/probe.correction.factor.normalization.R
+4cbdc89c688d058be97b39c33d3549e4 *R/read.xls.RCC.R
 f24091c652a3e329f9d2a7a1bdd5611e *R/sample.content.normalization.R
 d285b32a177a78681ac7a52f63b36a5c *R/unit.testing.NanoStringNorm.R
 e33d4377d2803b3170cd524f984d5b34 *data/NanoString.rda
@@ -78,5 +79,6 @@ e27816cc93b3c3705b0a94d946175f49 *man/other.normalization.Rd
 927f7f79ba9e42600c2d8862e34b678e *man/output.formatting.Rd
 e88d5ce3f29d30819f77b96c83b48bc3 *man/predict.concentration.Rd
 a46ee04f3cf488135d3fa4c7d9ea95e1 *man/probe.correction.factors.Rd
+b38d4fac58e8b3695e574fadc43dd89a *man/read.xls.RCC.Rd
 2f43d20e148420881e81fc474346b157 *man/sample.content.normalization.Rd
 c86c9d88264b603eaf943ff90ee72621 *tests/NanoStringNorm.unitTests.R

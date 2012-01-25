@@ -9,6 +9,9 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		if ( any(!c('Code.Class','Name', 'Accession') %in% colnames(x)) ) {
 			stop ('NanoStringNorm: You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.');
 			}
+		if ( is.factor(x$Code.Class) | is.factor(x$Name) | is.factor(x$Accession) ) {
+			stop ('NanoStringNorm: One of the annotation columuns (Code.Class,Name, Accession) is a factor.  Please convert to a character value to avoid issues');
+			}
 
 		# remove probe level warning message line from data
 		if ( grepl('+++ Functional tests', x[nrow(x),'Name'], fixed = TRUE) ){
@@ -80,6 +83,11 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		stop('NanoStringNorm: You cannot do CodeCount Normalization. There are no Positive Controls in your data.');
 		}
 
+	# check for Negative Controls
+	if ( Background != 'none' & !any(anno$Code.Class == 'Negative') ) {
+		stop('NanoStringNorm: You cannot do Background Correction. There are no Negative Controls in your data.');
+		}
+
 	# check Housekeeping and Control Genes
 	if ( grepl('housekeeping', SampleContent) & !any(anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping')) ) {
 		stop('NanoStringNorm: You Cannot do SampleContent Normalization. There are no *annotated* Housekeeping / Control genes in your data.');
@@ -134,14 +142,20 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		rm(output.sample.content.normalization);
 		}
 	
-	# do other additional normalizations.  note these are applied to all probes but excluding counts equal to 0
+	# do other additional normalizations.  note these are applied to all endogenous probes but excluding counts equal to 0
 	if ( otherNorm %in% c('quantile', 'zscore') ) {
 		x <- rbind(
 			x[!grepl('Endogenous', anno$Code.Class),],
-			NanoStringNorm:::other.normalization(x[grepl('Endogenous', anno$Code.Class),], anno, otherNorm, verbose)
+			NanoStringNorm:::other.normalization(
+				x = x[grepl('Endogenous', anno$Code.Class),], 
+				anno = anno[grepl('Endogenous', anno$Code.Class),], 
+				otherNorm = otherNorm, 
+				verbose = verbose
+				)
 			);
+		x <- x[anno$Name,];
 		}
-	
+
 	# do rounding, log-transformation
 	x <- NanoStringNorm:::output.formatting(x, anno, otherNorm, round.values, log, verbose);
 	
