@@ -1,11 +1,12 @@
 \name{NanoStringNorm}
-\title{NanoStringNorm}
+\title{Methods for preprocessing NanoString nCounter data}
 \alias{NanoStringNorm}
 \description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
 \usage{
 NanoStringNorm(
 	x, 
 	anno = NA, 
+	header = NA,
 	Probe.Correction.Factor = 'none', 
 	CodeCount = 'none', 
 	Background = 'none', 
@@ -16,30 +17,37 @@ NanoStringNorm(
 	return.matrix.of.endogenous.probes = FALSE, 
 	traits = NA, 
 	predict.conc = FALSE,
-	verbose = TRUE
+	verbose = TRUE,
+	genes.to.fit,
+	genes.to.predict,
+	...
 	);
 }
 \arguments{
-  \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an XLS spreadsheet.  If anno is NA then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}
-  \item{anno}{Alternatively anno can be used to specify the first three annotation columns of the expression data.  If anno used then it assumed that 'x' does not contain these data.  Anno allows flexible inclusion of alternative annotation data.  The only requirement is that it includes the 'Code.Class' and 'Name' columns. Code.Class refers to gene classification i.e. Positive, Negative, Housekeeping or Endogenous gene.}
+  \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an Excel spreadsheet.  If \emph{anno} is \emph{NA} then the first three columns must be c('Code.Class', 'Name', 'Accession') and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes. For convenience you can use the Excel import functions \emph{read.xls.RCC} to read directly from nCounter output files.  }
+  \item{anno}{Alternatively, \emph{anno} can be used to specify the first three annotation columns of the expression data.  If anno used then it is assumed that \emph{'x'} does not contain these data.  Anno allows flexible inclusion of alternative annotation data.  The only requirement is that it includes the \emph{'Code.Class'}  and \emph{'Name'} columns. Code.Class refers to gene classification i.e. Positive, Negative, Housekeeping or Endogenous gene.  For some Code Sets you will need to manually specify Housekeeping genes.}
+  \item{header}{The sample meta data at the top of the RCC excel worksheet.  The data typically spans rows 4-18 and there should be the same number of columns as samples.  This is imported automaically when you use the \emph{read.xls.RCC}.  Values in the header will be parsed for normalization diagnostics i.e. is expression associated with a specific cartridge.}
   \item{Probe.Correction.Factor}{An adjustment factor to be applied at the probe level prior to any normalization.  Specify 'filter' if you would like to remove any flagged genes.  See details.}
-  \item{CodeCount}{The method used to normalize for the majority of technical assay variation.  The options are 'none' and 'sum' and 'geo.mean' (geometric mean).  The method adjusts each sample based on its relative value to all samples.  The geometric mean may be less susceptible to extreme values.  The CodeCount normalization is applied first and is considered the most fundamental Normalization step.}
-  \item{Background}{The method used to estimate the background level.  Background is calculated based on negative controls and the options are 'none', 'mean', 'mean.2sd', 'max'.  Mean is the least and max is the most conservative and robust to false positives.  The calculated background is subtracted from each sample.  Background is calculated after code count adjustment.}
-  \item{SampleContent}{The method used to normalize for sample or RNA content i.e. pipetting fluctuations.  The options are 'none', 'housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean' and 'top.geo.mean'.  The housekeeping options require a set of annotated genes.  For RNA datasets the genes can be specified by editing the Code.Class field to equal 'Housekeeping' or 'Control' and the recommended method is 'housekeeping.geo.mean'.  For miRNA datasets the housekeeping genes are already annotated and the 'housekeeping.mean' method is recommended.  'total' uses the sum of the all the genes while 'top' uses the mean of the top 100 expressed genes which minimizes the impact of undetected genes.  The option 'top.geo.mean' is an alternative method which ranks RNAs based on the sum of all samples and then takes the geometric mean of the top 75.  Sample Content adjustment is applied after Code Count and Background correction.}
-  \item{otherNorm}{Some additional normalization methods.  Options include 'none', 'quantile' and 'zscore'.  otherNorm is applied after CodeCount, Background, SampleContent normalizations.}
+  \item{CodeCount}{The method used to normalize for technical assay variation.  The options are \emph{'none'} and \emph{'sum'} and \emph{'geo.mean'} (geometric mean).  The method adjusts each sample based on its relative value to all samples.  The geometric mean may be less susceptible to extreme values.  The CodeCount normalization is applied first and is considered the most fundamental Normalization step for technical variation.}
+  \item{Background}{The method used to estimate the background count level.  Background is calculated based on negative controls and the options are \emph{'none', 'mean', 'mean.2sd', 'max'}.  Mean is the least is the least conservative, while max and mean.2sd are the most robust to false positives.  The calculated background is subtracted from each sample.  Background is calculated after code count adjustment.}
+  \item{SampleContent}{The method used to normalize for sample or RNA content i.e. pipetting fluctuations.  The options are \emph{'none', 'housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean'} and \emph{'top.geo.mean'}.  The Housekeeping options require a set of annotated genes.  For RNA datasets the genes can be specified by editing the Code.Class field to equal 'Housekeeping' or 'Control'.  miRNA Code Sets generally already have annotated Housekeeping genes.  Note that the Housekeeping genes on miRNA Code Sets are messenger RNAs and therefore undergo a different laboratory process, specifically no ligation.  If using Housekeeping genes then 'housekeeping.geo.mean' is recommended.  Alternatively, you can use the method \emph{'total.sum'} which uses the sum of the all the genes or \emph{'top.geo.mean'} which uses the geometric mean of the top 75 expressed.  Sample Content adjustment is applied after Code Count and Background correction.  }
+  \item{otherNorm}{Some additional normalization methods.  Options include 'none', 'quantile' and 'zscore'.  otherNorm is applied after CodeCount, Background, SampleContent normalizations.  This is probably the largest source of inter sample variation in most studies.}
   \item{round.values}{Should the values be rounded to the nearest absolute count or integer.  This simplifies interpretation if taking the log by removing values 0-1 which result in negatives.}
-  \item{log}{Should a log2 transformation of the data be used.  Taking the log may help distributional assumptions and consistency with PCR based methods of calculating fold change.}
-  \item{return.matrix.of.endogenous.probes}{If true a matrix of normalized endogenous code counts is returned.  Annotation columns and control probes are removed.  This could be useful if you the output is being used directly for downstream analysis.  By default this is FALSE and list of objects including descriptive and diagnostics.}
-  \item{traits}{A vector or matrix of binary traits such as normal/tumour status.  Each trait may only contain 1,2 or NA similar to the numeric status of factors.  T-tests p-values and Fold-Change in terms of the '2' category are presented.  The results can be displayed using build in plotting functions.}
+  \item{log}{Should a log2 transformation of the data be used.  Taking the log may help distributional assumptions and consistency with PCR based methods for calculating fold change.}
+  \item{return.matrix.of.endogenous.probes}{If true a matrix of normalized Endogenous code counts is returned.  Annotation columns and control probes are removed.  This can be useful if you the output is being used directly for downstream analysis.  By default it is FALSE and list of objects including descriptive and diagnostics are returned.}
+  \item{traits}{A vector or matrix of phenotypes, design or batch effect variables.  For example tumour status, trx regimen, age at FFPE fixation, RNA quality scores and sample plate.  Note, that nCounter design covariates such as 'cartridge' and 'date' can be collected from the header of the RCC Excel spreadsheet.  At this time each trait should be binary and may only contain 1,2 or NA similar to the numeric coding of factors.  T-tests p-values and Fold-Change are presented in terms of the '2' category.  The results can be displayed using built in plotting functions.}
   \item{predict.conc}{Should the predicted concentration values be returned.  Defaults to FALSE.  The predicted concentrations are based on a fitted model between the observed counts and the expected concentration (fM).  Counts are replaced by predicted concentrations from a model using each samples normalized data. In addition a final column is added which predicts the concentration using the mean of all samples.}
   \item{verbose}{Output comments on run-status}
+  \item{genes.to.fit}{The set of genes used to generate the normalization parameters.  You can specify a vector of code classes or gene names as indicated in the annotation.  Alternatively, you can use descriptors such as 'all', 'controls', 'endogenous'.  For most methods the model will be fit and applied to the endogenous genes.  In some cases such as vsn you may want to vary this approach.}
+  \item{genes.to.predict}{The set of genes that the parameters or model is applied to.}
+  \item{...}{The ellipses are included to allow flexible use of parameters that are required by otherNorm methods.  For example the use of \emph{'strata' or 'calib'} parameters documented in the vsn package.  }
 }
 \details{
-The code is based on the NanoString analysis guidelines(see references).  The function allows normalization of both mRNA and miRNA NanoString expression data.  The order of the methods is fixed but the use of NA and multiple iterations of the functions allows flexibility.
+The code is based on the NanoString analysis guidelines (see references).  The function allows normalization of both mRNA and miRNA NanoString expression data.  The order of the methods is fixed but the use of the method \emph{'none'} and multiple iterations of the functions allows flexibility.
 
 Note.  Poorly assayed samples could negatively influence the normalization of the remaining data.  Prior to normalization check that the binding density is not less than .04 and the number of total counts/FOV is not much less than 1500. 
 
-The 'Name' column of the RCC worksheet sometimes flags certain probes with the message '(+++ See Message Below)'.  If this is the case a 'Readme' document including probe level adjustment factors should have been supplied by your Microrray center.  This file must be edited into a tabular file and specified in the Probe.Background.Correction argument.Factor.  The function will fail with an error if warnings are detected and no probe levele correction factor is supplied. Upon correction any warning messages will be stripped from the raw data file.  This background is probe-specific and all background subtraction should be completed prior to normalization.  The number of counts to be subtracted for a given probe is determined by multiplying a correction factor by the number of counts observed for the 128fM positive control in the same lane.
+The 'Name' column of the RCC worksheet sometimes flags certain probes with the message '(+++ See Message Below)'.  If this is the case a 'Readme' document including probe level adjustment factors should have been supplied by your Microrray center.  This file must be edited into a tabular file and specified in the Probe.Correction.Factor argument.  The function will fail with an error if warnings are detected and no probe levels correction factor is supplied. Upon correction any warning messages will be stripped from the raw data file.  This background is probe-specific and all background subtraction should be completed prior to normalization.  The number of counts to be subtracted for a given probe is determined by multiplying a correction factor by the number of counts observed for the 128fM positive control in the same lane.
 
 }
 \value{
@@ -59,8 +67,12 @@ The NanoString assay is described in the paper:
 
 ### 1 Normalize mRNA and output a matrix of normalized counts #################
 
-# load data
+# load the NanoString.mRNA dataset
 data(NanoString);
+
+# alternatively you can import the dataset
+# path.to.xls.file <- system.file("extdata", "RCC_files", "RCCCollector1_rat_tcdd.xls", package = "NanoStringNorm");
+# NanoString.mRNA <- read.xls.RCC(x = path.to.xls.file, sheet = 1);
 
 # specifiy housekeeping genes in annotation 
 NanoString.mRNA[NanoString.mRNA$Name \%in\% 
@@ -117,13 +129,13 @@ NanoString.mRNA.norm <- NanoStringNorm(
 ### 3 plot results ############################################################
 
 # Plot all the plots as PDF report.  See help on Plot.NanoStringNorm for examples
-pdf('NanoStringNorm_Example_Plots_All.pdf')
+pdf('NanoStringNorm_Example_Plots_All.pdf');
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = TRUE,
 	plot.type = 'all'
 	);
-dev.off()
+dev.off();
 
 }
 \keyword{NanoString}

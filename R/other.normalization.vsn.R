@@ -1,0 +1,75 @@
+other.normalization.vsn <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit = NULL, genes.to.predict = NULL, ...) {
+
+	# set the defaults to use all genes
+	genes.to.fit = if(is.null(genes.to.fit)) "all" else genes.to.fit;
+	genes.to.predict = if(is.null(genes.to.predict)) "all" else genes.to.predict;
+
+	# do not proceed if vsn cannot be loaded
+	if (!require(vsn)) {
+		stop ("OtherNorm.vsn:  VSN is not available.");
+		}
+
+	# parse the genes.to.fit options
+	if (any(genes.to.fit == 'all')) {
+		genes.to.fit <- unique(anno$Code.Class);
+		}
+	else if (any(genes.to.fit == 'controls')) {
+		genes.to.fit <- c('Housekeeping','Negative','Positive','Control');
+		}	
+
+	# parse the genes.to.predict options
+	if (any(genes.to.predict == 'all')) {
+		genes.to.predict <- unique(anno$Code.Class);
+		}
+	else if (any(genes.to.predict == 'controls')) {
+		genes.to.predict <- c('Housekeeping','Negative','Positive','Control');
+		}
+
+	# which genes need to use
+	genes.to.fit = anno$Name %in% genes.to.fit | grepl(paste(genes.to.fit, collapse = "|"), anno$Code.Class, ignore.case = TRUE) ;
+	genes.to.predict = anno$Name %in% genes.to.predict | grepl(paste(genes.to.predict, collapse = "|"), anno$Code.Class, ignore.case = TRUE) ;
+
+	# set values not to be fit to NA i.e. ignored
+	x.fit <- x;
+	x.fit[!genes.to.fit,] <- NA;
+
+	x.predict <- x;
+	x.predict[!genes.to.predict,] <- NA;
+
+	# list of Code.Classes or list of genes to apply the method to.  
+	if (verbose == TRUE) {
+		#cat("OtherNorm.vsn: The following genes will used to fit the model:\n");
+		#print(anno[genes.to.fit,c("Code.Class","Name")]);
+		}
+
+	#### START METHOD #########################################################################
+		
+	# vsn normalization
+	if ( all(genes.to.fit == genes.to.predict) ) {
+		# using common data
+		# x.fit <- justvsn(x.fit);
+		x.fit <- vsn2(x.fit, ...);
+		x.predict <- predict(x.fit, newdata = x.predict, useDataInFit = TRUE);
+		}
+	else {
+		# fit model on controls and predict on endogenous
+		x.fit <- vsn2(x.fit, minDataPointsPerStratum = 18, ...);
+		x.predict <- predict(x.fit, newdata = x.predict, useDataInFit = FALSE);
+		}
+	
+	# extract the expression matrx
+	#x.predict.exprs <- exprs(x.predict);
+
+	### END METHOD ############################################################################	
+
+	# add back the original counts to genes that should be ignored 
+	x.predict <- data.frame(x.predict);
+	
+	if (any(!genes.to.predict)) {
+		x.predict[!genes.to.predict, ] <- x[!genes.to.predict,];
+		}
+
+	rownames(x.predict) <- anno$Name;
+
+	return(x.predict);
+	}

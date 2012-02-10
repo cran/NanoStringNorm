@@ -1,0 +1,92 @@
+other.normalization.quantile <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit = NULL, genes.to.predict = NULL) { 
+
+	genes.to.fit <- if(is.null(genes.to.fit)) "endogenous" else genes.to.fit;
+	genes.to.predict <- if(is.null(genes.to.predict)) "endogenous" else genes.to.predict;
+
+	# parse the genes.to.fit options
+	if (any(genes.to.fit == 'all')) {
+		genes.to.fit <- unique(anno$Code.Class);
+		}
+	if (any(genes.to.fit == 'controls')) {
+		genes.to.fit <- c('Housekeeping','Negative','Positive','Control');
+		}
+
+	# which genes need to be fit
+	genes.to.fit = anno$Name %in% genes.to.fit | grepl(paste(genes.to.fit, collapse = "|"), anno$Code.Class, ignore.case = TRUE) ;
+	
+	# set values not to be fit to NA i.e. ignored
+	x.fit <- x;
+	x.fit[!genes.to.fit,] <- NA;
+
+	# zeros are considered missing so ignored for empirical distribution generation and application
+	x.fit[x.fit == 0] <- NA;
+
+	# list of Code.Classes or list of genes to apply the method to.  
+	if (verbose == TRUE) {
+		if (any(!genes.to.fit)) {
+			cat("OtherNorm.quantile: The following genes will not be processed:\n");
+			print(anno[!genes.to.fit,c("Code.Class","Name")]);
+			}
+		}
+
+	# sort each sample independently into a new dataset
+	x.sort <- apply(
+		X = x.fit, 
+		MARGIN = 2,
+		FUN = sort,
+		na.last = TRUE
+		);
+
+	# take median across samples for each rank and use this as an empirical distribution.
+	empirical.distribution <- apply(
+		X = x.sort, 
+		MARGIN = 1,
+		FUN = median,
+		na.rm = TRUE
+		);
+
+	# get the ranks in the unsorted data
+	x.rank <- apply(
+		X = x.fit, 
+		MARGIN = 2,
+		FUN = rank,
+		na.last = TRUE,
+		ties = 'first'
+		);
+
+	# set ranks to NA if NA in the original data
+	x.rank[is.na(x.fit)] <- NA;
+
+	# convert the ranks into probabilities to use quantile function
+	get.prob.from.rank <- function(xval) ( xval - 1 ) / ( length(na.omit(xval)) - 1 );
+
+	x.rank.prob <- apply(
+		X = x.rank,
+		MARGIN = 2,
+		get.prob.from.rank
+		);
+
+	# use the empirical distribution to peg the ranks too
+	get.quantile <- function(y, dist) { quantile(x = dist, probs = y, na.rm = TRUE) }
+
+	# only run the quantile function on the endogenous but add back the controls
+	x.fit <- apply(
+		X = x.rank.prob,
+		MARGIN = 2, 
+		FUN = get.quantile, 
+		dist = empirical.distribution
+		);
+
+	# NA's back to 0
+	x.fit[is.na(x.fit)] <- 0;
+
+	# add back the original counts to genes that should be ignored 
+	x.fit <- data.frame(x.fit);
+	
+	if (any(!genes.to.fit)) {
+		x.fit[!genes.to.fit, ] <- x[!genes.to.fit,];
+		}
+	
+	rownames(x.fit) <- anno$Name;
+	return(x.fit);
+	}

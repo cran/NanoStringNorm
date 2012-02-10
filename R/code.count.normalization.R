@@ -37,7 +37,7 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', verbose = TRUE
 		colnames(pos.norm.factor.flagged.samples) <- 'pos.norm.factor';
 
 		if (verbose) {
-			cat('CodeCount: The following samples have positive normalization factors outside the recommended range of (0.3 to 3).  Consider removing them.\n\n');
+			cat('CodeCount: The following samples have positive normalization factors outside the \n\t recommended range of (0.3 to 3).  Consider removing them.\n\n');
 			print(signif(pos.norm.factor.flagged.samples,3));
 			cat('\n');
 			}

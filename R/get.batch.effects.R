@@ -81,11 +81,18 @@ get.batch.effects <- function(x, anno = NA, log, traits, sample.summary.stats) {
 			);
 
 		# do a ttest comparing the distribution of the sample statistics for each of the trait groups
+		 t.test.pvalue <- function(xval, trait, ...) {
+		 	x <- xval[trait == 1];
+			y <- xval[trait == 2];
+			obj <- try(t.test(x, y, ...), silent=TRUE);
+			if (is(obj, "try-error")) return(NA) else return(obj$p.value);
+		 	}
+
 		batch.effect.ttest <- apply(
 			X = sample.summary.stats, 
 			MARGIN = 2,
-			FUN = function(xval, trait.value) t.test(x = xval[trait.value == 1], y = xval[trait.value == 2])$p.value, 
-			trait.value
+			FUN = t.test.pvalue,
+			trait = trait.value
 			);
 
 		# combine the results

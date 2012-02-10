@@ -1,0 +1,528 @@
+%\VignetteIndexEntry{Introduction to NanoStringNorm}
+%\VignetteDepends{vsn,googleVis,gdata}
+%\VignetteKeywords{Expression Analysis}
+%\VignettePackage{NanoStringNorm}
+
+%------------------------------------------------------------
+% setup document
+%------------------------------------------------------------
+
+\documentclass{article}
+\usepackage[margin=2cm,nohead]{geometry}
+\usepackage{color}
+\usepackage{cite}
+\usepackage{flafter}
+\usepackage{afterpage}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\definecolor{ns.green}{rgb}{0.0,0.0,0.75}
+\definecolor{ns.orange}{rgb}{0.0,0.0,0.75}
+\usepackage[%
+baseurl={http://cran.r-project.org/},%
+pdftitle={Introduction to analyzing NanoString nCounter data using the NanoStringNorm package},%
+pdfauthor={Daryl Waggott},%
+pdfsubject={NanoStringNorm},%
+pdfkeywords={NanoString},%
+pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
+pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=5,height=5} 
+
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
+
+%------------------------------------------------------------
+% start document
+%------------------------------------------------------------
+
+\begin{document}
+%----------------------------------------------------------------------------------------
+\title{Introduction to analyzing NanoString nCounter data using the NanoStringNorm package}
+\author{Daryl Waggott}
+%----------------------------------------------------------------------------------------
+\maketitle
+\tableofcontents
+%\listoffigures
+\newpage
+%------------------------------------------------------------
+% set R defaults
+%------------------------------------------------------------
+
+<<setup, echo=FALSE,results=hide>>=
+options(width=40, signif=3, digits=3)
+set.seed(0xdada)
+
+## To create bitmap versions of plots with many dots, circumventing
+##   Sweave's fig=TRUE mechanism...
+##   (pdfs are too large)
+openBitmap = function(nm, rows=1, cols=1) {
+  png(paste("NSN-", nm, ".png", sep=""), 
+       width=600*cols, height=700*rows, pointsize=14)
+  par(mfrow=c(rows, cols), cex=2)
+}
+@
+
+%------------------------------------------------------------
+\section{Getting started}\label{sec:started}
+%------------------------------------------------------------ 
+NanoStringNorm is a suite of tools used to pre-process, run diagnostics and visualize NanoString nCounter expression data.  nCounter data has some unique features as compared to traditional intensity based arrays.  Specifically, it uses direct digital detection requiring minimal sample intervention.  Direct, refers to the counting of individual tagged nucleic acids without any need for amplification.  The digital component refers the process of absolute and specific quantification, independent of relative measures like intensity or amplification cycles.  As such the platform is useful for an array of study designs (multiplexed samples, joint miRNA - mRNA code sets) and sample types (FFPE, plasma, whole lysate).
+\\ \\
+The consequence of the flexibility is that not all pre-processing methods are valid with all tissues and code sets.  For example, housekeeping genes are a fundamental part of mRNA standardization, however their choice and appropriateness are not clear for miRNA data.  NanoStringNorm emphasizes  normalization diagnostics and visualization of results in order to provide the best data void of technical artifacts for downstream analysis.  Moreover, the package is designed to be fully extensible in order to support and evaluate new pre-processing methods.
+\\ \\
+The following vignette describes the general workflow for using NanoStringNorm.  In the simplest case one can run the NanoStringNorm package on the raw counts without specifying any normalization methods.  The output will be of class \Rclass{NanoStringNorm} and can bet subsequently plotted for summary review and sample diagnostics.
+
+<<load.package, results = hide, echo = FALSE >>=
+require("NanoStringNorm")
+data("NanoString")
+@
+
+<<eg.basic.usage, eval = FALSE >>=
+require('NanoStringNorm');
+data("NanoString");
+@
+<<eg.basic.usage, eval = FALSE >>=
+# example 1
+NanoString.mRNA.raw = NanoStringNorm(NanoString.mRNA);
+pdf('my_first_nsn_plot.pdf');
+Plot.NanoStringNorm(NanoString.mRNA.raw, plot.type = 'all');
+dev.off();
+@
+
+%------------------------------------------------------------
+\section{Importing nCounter Data}\label{sec:import}
+%------------------------------------------------------------
+
+The input data usually comes in the form of a structured excel spreadsheet.  You can export the raw count data as delimited text file for use with R.  It is recommended that you copy the \emph{raw} worksheet to a blank page for editing.  First copy the count data (row 23) for each sample including the first 3 annotation columns Code.Class, Name and Accession to a separate worksheet or text file.  Don't forget to add the sample IDs (row 5), and remove any incomplete rows or columns.  The resulting tabular data can be saved as tab delimited for import into R.
+\\ \\
+Alternatively, you can import directly from xls using the function \Rfunction{read.xls.RCC} based on core functionality in the \Rpackage{gdata} package.
+
+<<eg.read.xls>>=
+# directly import the nCounter output
+path.to.xls.file <- system.file("extdata", "RCC_files", "RCCCollector1_rat_tcdd.xls", 
+                                package = "NanoStringNorm");
+NanoString.mRNA <- read.xls.RCC(x = path.to.xls.file, sheet = 1);
+# only keep the counts and not the header
+NanoString.mRNA <- NanoString.mRNA$x;
+@
+
+%------------------------------------------------------------
+\section{Standard Normalization Methods}\label{sec:standard.norm}
+%------------------------------------------------------------
+
+The current procedure recommended by NanoString involves a set of simple aggregations and adjustments using control genes.  There are many potential combinations which presents a challenge to end users.  In preliminary work no single combination has proved to work best in all situations or study designs.  Therefore, a reasonable approach is to start with one of the better performing combinations and calibrate it if necessary. The \emph{tweaking} is based on reviewing the diagnostics and paying close attention to experimental design caveats discussed at the end of this document.
+\\ \\ 
+The following example is based on a subset of data from a mRNA study of how different Rat strains respond to dioxins.  First step is to add some housekeeping genes.  In some code sets specifically miRNA's these are already included.
+%
+<<eg.standard.1>>=
+ # specify housekeeping genes in annotation 
+data(NanoString);
+NanoString.mRNA[NanoString.mRNA$Name %in%  
+    c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
+@
+%
+Then you run a typical normalization.  The following is reasonable and in many situations will be sufficient to handle technical variation.  Note, that the use 'mean' for Background correction.  This is the least conservative method of summarizing negative controls and will increase the number of observed false positives due to elevated uncertainty at lower expression values.  
+\\ \\ 
+By default the output is a list of sample and gene summary data.frames.  In the following example only the matrix of normalized values is output.
+%
+<<eg.standard.2>>=
+# example 2
+# normalize mRNA and output a matrix of normalized counts
+NanoString.mRNA.norm <- NanoStringNorm(
+  x = NanoString.mRNA,
+  anno = NA,
+	CodeCount = 'sum',
+	Background = 'mean',
+	SampleContent = 'housekeeping.sum',
+	round.values = FALSE,
+	log = FALSE,
+  return.matrix.of.endogenous.probes = TRUE
+	);
+@
+%
+NanoStringNorm prints informative diagnostic messages to the screen.  Specifically, samples that have normalization factors three standard deviations from the mean are flagged for review.  Large values could reflect a technical problem and dramatically influence over all normalization.
+\\ \\
+In the following example the geometric mean is used to summarize the CodeCount (positive) and SampleContent (houskeeping) controls.  This minimizes the impact of outliers values.  Also, a stringent background correction is applied (mean + 2 standard deviations) which removes a large proportion of false positives and therefore increases specificity at the expense of some sensitivity.  For preliminary analysis it can be easier to focus on high confidence results first.  For these reasons \textbf{the following model is recommended} for first attempts.
+\\ \\
+For miRNA data the use of mRNA or RNU's can be problematic change the SampleContent method to 'top.geo.mean'.
+%
+<<eg.standard.3>>=
+# example 3
+# this is the recommended method!
+NanoString.mRNA.norm <- NanoStringNorm(
+  x = NanoString.mRNA,
+	CodeCount = 'geo.mean',
+	Background = 'mean.2sd',
+	SampleContent = 'housekeeping.geo.mean',
+	round.values = TRUE,
+	log = TRUE
+	);
+@
+%
+In order to provide more information for diagnostic and preliminary results one can supply binary trait data.  Ideally, one would include a mix of design related covariates such as RNA quality/quantity, FFPE age and potential biological confounder's such as tissue, age, gender, ethnicity.  Results will be presented as differential expression and correlations with normalization factors.  
+\\ \\
+In this case we are looking at three \emph{strains} of Rat.  Data can be dichotomized using the median, extremes, kmeans etc.  Values must be 1, 2 or NA.  For categorical data with greater than two classes you can convert them to a set of indicator variables i.e. plate1 vs all other plates.  This has the advantage of simple interpretation of effect estimates. 
+%
+<<eg.standard.4>>=
+ # setup a binary trait using rat strain
+ sample.names <- names(NanoString.mRNA)[-c(1:3)];
+ strain1 <- rep(1, times = (ncol(NanoString.mRNA)-3));
+ strain1[grepl('HW',sample.names)] <- 2;
+ strain2 <- rep(1, times = (ncol(NanoString.mRNA)-3));
+ strain2[grepl('WW',sample.names)] <- 2;
+ strain3 <- rep(1, times = (ncol(NanoString.mRNA)-3));
+ strain3[grepl('LE',sample.names)] <- 2;
+ trait.strain <- data.frame(
+         row.names = sample.names,
+         strain1 = strain1,
+         strain2 = strain2,
+         strain3 = strain3
+         );
+@
+%
+<<eg.standard.5>>=
+# You can also input the gene annotation separately to allow flexibility
+NanoString.mRNA.anno <- NanoString.mRNA[,c(1:3)];
+NanoString.mRNA.data <- NanoString.mRNA[,-c(1:3)];
+#NanoString.mRNA.anno$cool.genes <- vector.of.cool.genes;
+@
+%
+<<eg.standard.6>>=
+# example 3
+# include a trait for differential expression and batch effect evaluation
+NanoString.mRNA.norm <- NanoStringNorm(
+  x = NanoString.mRNA.data,
+  anno = NanoString.mRNA.anno,
+	CodeCount = 'geo.mean',
+	Background = 'mean.2sd',
+	SampleContent = 'top.geo.mean',
+	round.values = TRUE,
+	log = TRUE,
+	traits = trait.strain
+	);
+@
+
+In the above NanoStringNorm 
+
+%------------------------------------------------------------
+\section{Other Normalization Methods}\label{sec:other.norm}
+%------------------------------------------------------------
+
+As an alternative to the standard normalization methods proposed by NanoString there is facility to apply an expanding set of additional methods.  Some basic strategies include transforming each sample to zscores, the standard normal distribution based on ranks and an empirical derived normal distribution.  The first two methods have advantages when comparing results across batches or platforms in the case of joint or meta-analysis.  Quantile normalization on the other hand has advantages of scaling samples within the same pre-processing batch to a common empirically derived distribution.
+\\ \\
+Variance Stabilizing Normalization is also implemented via functionality in the popular \Rpackage{vsn} package.  Additional mixed model and count data (negative binomial) based methods are currently being added.
+\\ \\
+Summary diagnostics and plotting are still available for these methods.
+\\
+Several examples include:
+
+<<eg.other.1, eval=FALSE>>=
+# z-value transformation. scale each sample to have a mean 0 and sd
+# by default all the other normalization methods are 'none'
+# you cannot apply a log because there are negative values
+# good for meta-analysis and cross platform comparison abstraction of effect size
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	otherNorm = 'zscore',
+	return.matrix.of.endogenous.probes = TRUE
+	);
+@
+%
+<<eg.other.2, eval=FALSE>>= 
+# inverse normal transformation. use quantiles to transform each sample to the normal distribution
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	otherNorm = 'rank.normal',
+	return.matrix.of.endogenous.probes = TRUE
+	);
+@
+%
+<<eg.other.3, eval=FALSE>>= 
+# quantile normalization.  create a empirical distribution based on the median gene counts at the same rank across sample.  then transform each sample to the empirical distribution.
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	otherNorm = 'quantile',
+	return.matrix.of.endogenous.probes = FALSE
+	);
+@
+%
+<<eg.other.4, eval=FALSE>>= 
+# vsn.  apply a variance stabilizing normalization.
+# fit and predict the model using 'all' genes i.e. 'controls' and 'endogenous'.  this is the default
+# note this is just a wrapper for the vsn package
+# you could even add strata for the controls vs the endogenous to review systematic differences
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	otherNorm = 'vsn',
+	return.matrix.of.endogenous.probes = FALSE,
+	genes.to.fit = 'all',
+	genes.to.predict = 'all'
+	);
+@
+%
+<<eg.other.5, eval=FALSE>>= 
+# vsn. this time generate the parameters (fit the model) on the 'controls' and apply (predict) on the endogenous
+# alternatively you may want to use the 'controls' for both fitting and predicting.
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	otherNorm = 'vsn',
+	return.matrix.of.endogenous.probes = FALSE,
+	genes.to.fit = 'controls',
+	genes.to.predict = 'endogenous'
+	);
+@
+%
+<<eg.other.6, eval=FALSE>>= 
+# vsn. apply standard NanoString normalization strategies as an alternative to the vsn affine transformation.
+# this effectively applies the glog2 variance stabilizing transformation to the adjusted counts
+NanoString.mRNA.norm <- NanoStringNorm(
+	x = NanoString.mRNA,
+	CodeCount = 'sum',
+	Background = 'mean',
+	SampleContent = 'top.geo.mean',
+	otherNorm = 'vsn',
+	return.matrix.of.endogenous.probes = FALSE,
+	genes.to.fit = 'endogenous',
+	genes.to.predict = 'endogenous',
+	calib = 'none'
+	);
+@
+%------------------------------------------------------------
+\section{Static Plotting}\label{sec:static.plotting}
+%------------------------------------------------------------
+
+There are a number of descriptive, diagnostic and results plots.  The following code snippets show how to generate them.
+
+<<eg.static.plots.1, eval=FALSE>>=
+# plot all the plots as PDF report
+pdf('NanoStringNorm_Example_Plots_All.pdf')
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = TRUE,
+	plot.type = 'all'
+	);
+dev.off()
+@
+
+%
+<<eg.static.plots.2, eval=FALSE>>=
+# publication quality tiff volcano plot
+tiff('NanoStringNorm_Example_Plots_Volcano.tiff', units = 'in',  height = 6, 
+	width = 6, compression = 'lzw', res = 1200, pointsize = 10);
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = TRUE,
+	plot.type = c('volcano'),
+	title = FALSE
+	);
+dev.off()
+@
+
+%
+<<eg.static.plots.3, eval=FALSE>>=
+# all plots as separate files output for a presentation
+png('NanoStringNorm_Example_Plots_%03d.png', units = 'in',  height = 6,
+	width = 6, res = 250, pointsize = 10);
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = TRUE,
+	plot.type = c('cv','mean.sd','RNA.estimates','volcano','missing','norm.factors','positive.controls','batch.effects')
+	);
+dev.off()
+@
+
+%
+<<eg.static.plots.4, eval=FALSE>>=
+# user specified labelling with optimal resolution for most digital displays
+png('NanoStringNorm_Example_Plots_Normalization_Factors.png', units = 'in', height = 6,
+	width = 6, res = 250, pointsize = 10);
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = FALSE,
+	label.ids = list(genes = rownames(NanoString.mRNA.norm$gene.summary.stats.norm), 
+		samples = rownames(NanoString.mRNA.norm$sample.summary.stats)),
+	plot.type = c('norm.factors')
+	);
+dev.off()
+@
+
+\newpage
+
+What is the distribution of gene expression.  Existing or potential Housekeeping genes should have modest to high expression with very low variation.  Estimates of the standard deviation of genes can be used for power calculations.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_001.png}  
+\caption{\label{NSN.mean.sd}%
+The mean vs the standard deviation.  
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+A comparison of global gene level variation pre and post normalization.  The post normalization curve should be shifted to the left if method is accounting for technical variation.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_002.png}  
+\caption{\label{NSN.cv}%
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+Is there differential expression in design traits?  Do you see known or expected signals among biologically relevant contrasts.  Are there any profiles associated with biological covariates such as age, gender, trx, ethnicity, bmi.  Including these traits as covariates in a model could dampen any true positive signal if the same genes are associated with outcome.  Conversely, not including the traits could result in a confounded results.  Models should be evaluated carefully.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_003.png}  
+\caption{\label{NSN.volcano.strain1}%
+Volcano plot of Rat strain 1 vs all other rats.  The y-axis is -log10 p-value's and the x-axis is fold change.  The size of the points is related to mean expression and the colour orange indicates fold change greater than two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.
+}
+\end{center}\end{figure*}
+%
+\newpage
+
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_004.png}  
+\caption{\label{NSN.volcano.strain2}%
+Volcano plot of Rat strain 2 vs all other rats.  The y-axis is -log10 p-value's and the x-axis is fold change.  The size of the points is related to mean expression and the colour orange indicates fold change greater than two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+Are there any samples that have a lot of missing values.  Missing could be a technical failure or a problem with too little input material.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_006.png}  
+\caption{\label{NSN.missing}%
+Proportion of missing vs mean expression by sample.
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+In normalizing for sample content you can use Housekeeping genes or an aggregate score of a larger set of non Housekeeping genes.  Both methods under ideal conditions should be equivalent.  Samples with large deviations from the best fit line should be investigated.  When looking at miRNA code sets a large difference could reflect contamination by ligation inhibitors.  All the miRNA genes undergo ligation, however the mRNA housekeeping do not.  If inhibitors are present this could also effect levels of the other controls and consequently magnify inter-sample differences.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_007.png}  
+\caption{\label{NSN.RNA.estimates}%
+Estimates of input RNA or sample content.  The x-axis is the RNA estimate for each sample based on the top 75 expressed genes and the y-axis  is the RNA estimate using housekeeping genes.
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+Correlation of technical covariates with summary gene features.  If still present after normalization correlation could indicate residual technical variation or batch effects.  This could be problematic if the study has an unbalanced design which could result in a gene vs trait model being confounded by a third technical covariate.  For example cartridge 1 has a high mean expression level and it contains a large proportion of females.  Looking for differential expression between males and females will be confounded by females being over represented on an outlier cartridge.  In some instances a correlation of design covariate with a summary gene feature could be indicative of the hidden biological substructure in the data.  Biological rational for observed technical relationships is preferred if possible.  For example the last cartridge in your dataset is associated with low RNA content and elevated missing.  You go back and check your lab notes and realize that you prioritized samples based on quality / quantity for running on the nCounter.  All the poor samples were left to the end.  Correlation of biological covariates with summary gene features.  While not strictly batch effects any association could introduce a bias.  For example a large proportion of your tumour samples have high levels of missing.  This could be biologically plausible or reflect a technical artifact i.e. the tumour samples were taken from very old and degraded FFPE blocks.
+
+\newpage
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_008.png}  
+\caption{\label{NSN.batch.effects}%
+Batch effects and potential confounding.  The x-axis lists binary traits and design variables.  The y-axis is the difference between the two categories for the specified sample summary feature.
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
+It is important to review the quality and quantity of the normalization factors or control probes.  Individual or groups of sample that are outliers could influence the normalization.  For example if a sample has a very low estimate of RNA content then the resulting normalization factor could over correct and end up contributing unexpected variation.  Samples extending beyond 100\%\ are annotated for being potential outliers.
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_009.png}  
+\caption{\label{NSN.norm.factors}%
+Barplot of normalization factors used to correct the data.  For each method the CodeCount (positive controls), Background (negative controls) and sample content (housekeeping) the normalization parameter is expressed as percent difference from the mean. 
+}
+\end{center}\end{figure*}
+%
+\newpage
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_010.png}  
+\caption{\label{NSN.postive.controls}%
+Scatterplot of positive and negative control counts.  The green points show the expected concentration in fM of spiked in positive controls vs the observed normalized counts.  A best fit line is added where the intercept reflects sensitivity.  Orange dots are the negative controls. 
+}
+\end{center}\end{figure*}
+%
+
+
+%------------------------------------------------------------
+\section{Interactive Plotting}\label{sec:interactive.plotting}
+%------------------------------------------------------------
+
+A set of Google Motion charts can be output based on functionality in the \Rpackage{googleVis} package.  These are highly interactive plots based on sample and gene summary output.  The plots are very useful for the purposes of presentations and user directed data exploration.  For example one can compare the differential expression of uncorrelated traits to find unexpected overlaps.
+\\ \\
+By default the plots are rendered in your browser using a built in web server.  For distribution and later use you will need to save the resulting html files.  The use of a web server is required to display the results and therefore the program attempts to download \emph{mongoose} embedded web server \url{http://code.google.com/p/mongoose/} (License MIT).  After starting the binary/executable you can access the plots at \url{http://127.0.0.1:8080}.
+
+\newpage
+
+<<eg.interactive.plots.1, eval=FALSE>>=
+ # plot the sample summaries to your browser
+ Plot.NanoStringNorm.gvis(
+         x = NanoString.mRNA.norm,
+         plot.type = c('gene.norm', 'sample'),
+         save.plot = FALSE
+         );
+@ 
+%
+<<eg.interactive.plots.2, eval=FALSE>>=
+ # plot the gene summaries to a directory for distribution and later viewing
+ Plot.NanoStringNorm.gvis(
+        x = NanoString.mRNA.norm,
+         plot.type = c('gene.norm', 'sample'),
+         save.plot = TRUE,
+         path.to.mongoose = 'none',
+         output.directory = "NanoStringNorm_Interactive_Plot"
+         );
+@
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=1.1\textwidth]{plot_NSN_gvis_geneStats_screenshot.png}  
+\caption{\label{NSN.gvis.geneStats}%
+A screen capture of the interactive Google chart for genes.  Axis, colour and point size can be changed to any gene or trait level summaries.
+}
+\end{center}\end{figure*}
+%
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=1.1\textwidth]{plot_NSN_gvis_sampleStats_screenshot.png}  
+\caption{\label{NSN.gvis.sampleStats}%
+A screen capture of the interactive Google chart for samples.  Axis, colour and point size can be changed to any sample level summaries.
+}
+\end{center}\end{figure*}
+%
+\newpage
+
+%------------------------------------------------------------
+\section{Study Design Related Issues}\label{sec:issues}
+%------------------------------------------------------------
+
+
+Based on looking at number of miRNA and mRNA datasets we've noticed several situations that tend present analytical challenges.
+
+\begin{itemize}
+\item Mixed tissues.  Jointly pre-processing different tissues with very different expression distributions. i.e. inhibitor or T/N.  This can introduce technical artifacts which increase false positive differences.
+\item Mixed samples.  Including both frozen and FFPE sometimes show dramatic differences even between replicates.  Large variation in fixation process and date can also influence RNA integrity.  This has been flagged in several studies.
+\item Housekeeping gene choice.  Some common genes have been shown to be associated with phenotypes.  Also, using the validity of using mRNA in miRNA studies is unclear.  In NanoString code sets the mRNA probes do not undergo ligation and therefore are under different technical influences
+\item Using global or top normalization when all a large proportion of genes are associated with phenotype i.e. EBV and NPC
+\item Plasma or circulating profiles.  Very specific care needs to be taken on concise input volumes and quantification.  Moreover, additional spike-in controls are needed.  Inhibitors have been shown to be an issue.
+\item nCounter batch variability.  While not as of yet quantified the effect of date still has a contributing factor.  Jointly normalizing and analyzing data across multiple batches should be done carefully.
+\end{itemize}
+
+At this time adaptable methods are being developed which better take into account experimental design and technical variability.  This document will be updated as more information becomes available.
+\end{document}
+
+% {See Section~\ref{sec:strata}.} 
+% figphrase{vsn-nkid-scp}
+% \Rfunction{vsn2} \Robject{calib}
+%Todo 
+%- add barplot that shows proportion of variation accounted for.  Pos control R2, neg/hk cv, design covariates, replicates
+%- add DESeq to other.normalization
+%- add ratio based normalization
+%- add mixed model pre-processing based on MAQC to norm
+%- Proportion of technical variation accounted for (total breakdown, controls, reps, design)

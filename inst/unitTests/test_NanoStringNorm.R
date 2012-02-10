@@ -3,6 +3,8 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 	# go to test data directory
 	path.to.input.files <- '../NanoStringNorm/extdata/input_function_files/';
 	path.to.output.files <- '../NanoStringNorm/extdata/output_function_files/';
+	#path.to.input.files <- '../extdata/input_function_files/';
+	#path.to.output.files <- '../extdata/output_function_files/';
 
 	# read input files
 	x             <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_matrix.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
@@ -17,7 +19,7 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 	# run function to get *test output* 
 	test.output.NSN.none   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE);
 	test.output.NSN.none.matrix   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE, return.matrix.of.endogenous.probes = TRUE);
-
+#browser();
 	test.output.NSN.random <- NanoStringNorm:::NanoStringNorm(
 		x = x, 
 		anno = anno, 
@@ -58,6 +60,11 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 	names(x.check2.2)[1] <- 'Code__Class';
 	check2.2 <- checkException(NanoStringNorm:::NanoStringNorm(x.check2.2, anno = NA, verbose = FALSE));
 
+	# a factor as one of the annotations
+	x.check2.3 <- data.frame(anno, x, stringsAsFactors = FALSE);
+	x.check2.3$Code.Class <- as.factor(x.check2.3$Code.Class);
+	check2.3 <- checkException(NanoStringNorm:::NanoStringNorm(x.check2.3, anno = NA, verbose = FALSE));
+
 	# put annotation at end of data
 	#x.check2.3 <- data.frame(x, anno, stringsAsFactors = FALSE);
 	#test.check2.3 <- NanoStringNorm:::NanoStringNorm(x.check2.3, anno = NA, verbose = FALSE);
@@ -71,7 +78,7 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 
 	# missing negative
 	
-	checks <- c(check1.1 = check1.1, check1.2 = check1.2, check2.1 = check2.1, check2.2 = check2.2);
+	checks <- c(check1.1 = check1.1, check1.2 = check1.2, check2.1 = check2.1, check2.2 = check2.2, check2.3 = check2.3);
 	
 	if (!all(checks)) print(checks[checks == FALSE]);
 

@@ -1,9 +1,9 @@
 \name{NanoStringNorm-package}
 \alias{NanoStringNorm-package}
 \docType{package}
-\title{A set of functions for Normalization of Nanostring miRNA and RNA expression levels.  Currently, only one function "NanoStringNorm" is used for all combinations of Normalization.}
+\title{A suite of functions for normalization, visualization and differential expression of NanoString miRNA and RNA expression levels}
 \description{
-A set of functions for Normalization of Nanostring miRNA and RNA expression levels.  Currently, only one function "NanoStringNorm" is used for all combinations of Normalization.
+A suite of functions for the normalization, visualization and differential expression of NanoString miRNA and RNA expression level.  The primary interface is through the function \emph{'NanoStringNorm'}.  The package enables existing preprocessing methods proposed by NanoString in addition to an extensible plug and play framework for further methods incorporation.  Emphasis is put on visualization of normalization diagnostics and results in order to prevent inadvertent batch effects or confounding introduced through the specifics of study design.
 }
 \details{
 \tabular{ll}{

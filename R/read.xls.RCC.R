@@ -7,7 +7,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 
 	# check if perl exists
 	if ( length(Sys.which("perl")) == 0 ) {
-		stop(paste("READ.XLS.RCC: Perl was not found in you're PATH.  Is it installed?  If it is add it to you're PATH variable or specify the location in the 'perl' argument  \n", xls)) ;
+		stop(paste("READ.XLS.RCC: Perl was not found in you're PATH.  Is it installed?  \n\tIf it is add it to you're PATH variable or specify the location in the 'perl' argument  \n", xls)) ;
 		}
 
 	# check if file exist
@@ -46,7 +46,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 	# drop missing columns
 	header <- header[,-c(1,2)];
 	# drop trailing rows
-	#header <- header[1:14,]; 
+	header <- header[1:12,]; 
 	# drop trailing colums
 	header <- header[,!is.na(header[1,]) & !is.na(header[2,])];
 
@@ -71,23 +71,25 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 		strip.white = TRUE,
 		as.is = TRUE
 		);
-
+	
 	# drop any trailing columns 
 	x <- x[,1:(3+length(sample.ids))];
 
 	# drop rows that have a missing code class or gene name
-	rows.with.missing.anno <- which(x[,1] == '' | x[,2] == '');
-	cat(paste("The following row(s)", paste(rows.with.missing.anno, collapse = ", "), "have been dropped due to missing annotation.  You may want to double check the excel file.\n\n"));
-		
-	if (length(rows.with.missing.anno) != 0) {	
-		x <- x[-rows.with.missing.anno,];
+	rows.with.missing.anno <- (x[,1] == '' | x[,2] == '');
+	if (any(rows.with.missing.anno)) {
+		cat(paste("The following row(s)", paste(rows.with.missing.anno, collapse = ", "), "have been dropped due to missing annotation.\n\t  You may want to double check the excel file.\n\n"));
 		}
 
+	if (any(rows.with.missing.anno)) {	
+		x <- x[-rows.with.missing.anno,];
+		}
+	
 	# add sample names
 	colnames(x) <- c(colnames(x)[1:3], sample.ids);
 
 	# print summary of samples
-	cat(paste("There were", length(sample.ids), "samples imported. Note that spaces in sample names will be replaced by dots. \n"));
+	cat(paste("There were", length(sample.ids), "samples imported. \nNote that spaces in sample names will be replaced by dots. \n"));
 	
 	if ( length(sample.ids) > 5) {
 		cat("The first and last 3 sample names found in the dataset are:\n");
@@ -102,5 +104,5 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 	cat(paste("\n\nThere were", nrow(x), "genes imported with the following Code Class breakdown:"));
 	print(table(x$Code.Class));
 
-	return(list(x, header));
+	return(list(x = x, header = header, class = 'NanoString'));
 	}

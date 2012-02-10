@@ -1,4 +1,4 @@
-Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, trait = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE) {
+Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE) {
 
 	# check that the object being plotted is the right class
 	if ( class(x) != 'NanoStringNorm' ) { stop('In order to plot the input object needs to be of class NanoStringNorm.  Try changing return.matrix.of.endogenous.probe to FALSE.'); }
@@ -12,11 +12,11 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	if ('all' %in% plot.type) { plot.type <- c('mean.sd', 'cv', 'norm.factors', 'missing', 'volcano','batch.effects','RNA.estimates','positive.controls'); }
 
 	# setup default plotting parameters
-	ns.green.rgb  <- rgb(193, 215, 46, max = 255); # original
-	ns.orange.rgb <- rgb(228, 108, 11, max = 255);
+	ns.green.rgb  <- rgb(193, 215, 46, maxColorValue = 255); # original
+	ns.orange.rgb <- rgb(228, 108, 11, maxColorValue = 255);
 	
-	ns.green.rgb  <- rgb(193, 215, 66, max = 255); # better greyscale 
-	ns.orange.rgb <- rgb(228, 108, 0, max = 255);
+	ns.green.rgb  <- rgb(193, 215, 66, maxColorValue = 255); # better greyscale 
+	ns.orange.rgb <- rgb(228, 108, 0, maxColorValue = 255);
 
 	op.default <- par(cex = 1, cex.lab = 1.5, cex.axis = 1, cex.main = 1.5, las = 1, pch = 20, col.lab = 'grey30', col.axis = 'grey30', col.main = 'grey30', mar = c(5.1,5.1,4.1,2.1));
 
@@ -232,7 +232,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			# add a more informative axis label if the pvalues are truncated
 			if (trait.ylim > 10) {
 				lines(x = c(-trait.xlim,-trait.xlim + .25,-trait.xlim,-trait.xlim-.25,-trait.xlim) - (.04 * 2 * trait.xlim),y = seq(10,11,.25), lwd = 2, col = 'grey60', xpd = NA);
-				axis(side = 2, at = 11, label = ceiling(trait.ylim.max), col = 'grey30', col.ticks = 'black', cex.axis = 1.2);
+				axis(side = 2, at = 11, labels = ceiling(trait.ylim.max), col = 'grey30', col.ticks = 'black', cex.axis = 1.2);
 				}
 
 			# if best guess labeling then plot the top ranked genes
@@ -278,6 +278,12 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	################################################################################################
 
 	if ('missing' %in% plot.type) {
+		if (all(x$sample.summary.stats.norm$Sample.Missing == 0)) {
+			no.missing <- TRUE;
+			}
+		else {
+			no.missing <- FALSE;
+			}
 
 		# calculate the raw sample mean
 		raw.sample.Mean <- apply(
@@ -286,7 +292,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			FUN = mean,
 			na.rm = TRUE
 			);
-
+		
 		# plot the data
 		plot(
 			x = raw.sample.Mean,
@@ -299,10 +305,17 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			col = ns.green.rgb
 			);
 		
-		# what samples are outliers for missing
-		outlier.missing <- (x$sample.summary.stats.norm$Sample.Missing - mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE)) / sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
-		outlier.missing.threshold.pos <- 3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
-		outlier.missing.threshold.neg <- -3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+		if (no.missing == FALSE) {
+			# what samples are outliers for missing
+			outlier.missing <- (x$sample.summary.stats.norm$Sample.Missing - mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE)) / sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+			outlier.missing.threshold.pos <- 3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+			outlier.missing.threshold.neg <- -3 * sd(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE) + mean(x$sample.summary.stats.norm$Sample.Missing, na.rm = TRUE);
+			}			
+		else {
+			outlier.missing <- rep(0, nrow(x$sample.summary.stats.norm));
+			outlier.missing.threshold.pos <- 0;
+			outlier.missing.threshold.neg <- 0;
+			}
 		
 		# what samples are outliers for mean
 		outlier.mean <- (raw.sample.Mean - mean(raw.sample.Mean, na.rm = TRUE)) / sd(raw.sample.Mean, na.rm = TRUE);
@@ -364,16 +377,21 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 	#####################################################################################################################################################
 
 	if ('RNA.estimates' %in% plot.type) {
+
+	if (!any(grepl('[Hh]ousekeeping',x$raw.data$Code.Class))) {
+		print("Plot.NanoStringNorm: No housekeeping genes so RNA.estimates plot is skipped");
+		}
+	else {
 		
 		# get the geometric mean of the HK and endogenous genes
 		RNA.hk <- apply(
-			X = x$raw.data[grepl('[Hh]ousekeeping',x$raw.data$Code.Class), !colnames(x$raw.data) %in%     c('Code.Class','Name', 'Accession')],
+			X = x$raw.data[grepl('[Hh]ousekeeping',x$raw.data$Code.Class), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
 			MARGIN = 2,
 			FUN = NanoStringNorm:::get.geo.mean
 			);
 
 		RNA.top <- apply(
-			X = x$raw.data[grepl('[Ee]ndogenous',x$raw.data$Code.Class) & x$gene.summary.stats.norm$    Mean > quantile(x$gene.summary.stats.norm$Mean,.8), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
+			X = x$raw.data[grepl('[Ee]ndogenous',x$raw.data$Code.Class) & x$gene.summary.stats.norm$Mean > quantile(x$gene.summary.stats.norm$Mean,.8), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
 			MARGIN = 2,
 			FUN = NanoStringNorm:::get.geo.mean
 			);
@@ -430,17 +448,28 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				);
 			}
 		}
+		}
 
 	##############################################
 	### sample. batch effects ####################
 	##############################################
 
-	if ('batch.effects' %in% plot.type & dim(x$batch.effects)[1]>6) {
-
+	#if ('batch.effects' %in% plot.type & dim(x$batch.effects)[1]>6) {
+	if ('batch.effects' %in% plot.type) {
 		trait.names <- unique(x$batch.effects$trait.name);
 		n.traits <- length(trait.names);
-		sample.statistics <- c('Mean','SD','Missing','PositiveControls','NegativeControls','RNA Content');
-
+		
+		sample.statistics <- c('Mean','SD','Missing');
+		if (x$normalization.workflow['CodeCount'] != 'none' ) {
+			sample.statistics <- c(sample.statistics,'PositiveControls');
+			}
+		if (x$normalization.workflow['Background'] != 'none' ) {
+			sample.statistics <- c(sample.statistics,'NegativeControls');
+			}
+		if (x$normalization.workflow['SampleContent'] != 'none' ) {
+			sample.statistics <- c(sample.statistics,'RNA Content');
+			}
+		
 		if (length(trait.names) > 10) {
 			op.batch.effects <- par(mfcol = c(3,1), mar=c(2,1,2,0), oma = c(6,5,5,1));
 			}
@@ -449,9 +478,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 			}
 
 		for (sample.statistic in sample.statistics) {
-
 			batch.data <- x$batch.effects[x$batch.effects$sample.statistics %in% sample.statistic,];
-
 			batch.col <- rep(ns.orange.rgb, n.traits);
 			batch.col[batch.data$p.ttest < 0.05] <- ns.green.rgb;
 
@@ -473,19 +500,19 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				xaxt = 'n'
 				);
 
-			axis(1, at = 1:n.traits, label = NA, col.axis = 'grey30');
+			axis(1, at = 1:n.traits, labels = NA, col.axis = 'grey30');
 			
 			if (length(trait.names) > 10) {
 				if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
 					if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
 					mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
 					mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2, las = 0);
-					axis(1, at = 1:n.traits, label = trait.names, col.axis = 'grey30', las = 3);
+					axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
 					}
 				}
 			else{
 				if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
-					axis(1, at = 1:n.traits, label = trait.names, col.axis = 'grey30', las = 3);
+					axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
 					}
 				if (sample.statistic == 'Missing') {
 					if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
@@ -511,14 +538,16 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 		op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
 
 		# for simplicity add collate all the relevent data into a new object
-		normalization.factors.to.plot <- cbind(
-			x$sample.summary.stats.norm$pos.norm.factor, 
-			mean(x$sample.summary.stats.norm$background.level) / x$sample.summary.stats.norm$background.level, 
-			x$sample.summary.stats.norm$sampleContent.norm.factor
+		normalization.factors.to.plot <- data.frame(
+			positiveControls = if (x$normalization.workflow['CodeCount'] != 'none') x$sample.summary.stats.norm$pos.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)), 
+			negativeControls = if (x$normalization.workflow['Background'] != 'none') (mean(x$sample.summary.stats.norm$background.level) / x$sample.summary.stats.norm$background.level) else rep(1,nrow(x$sample.summary.stats.norm)), 
+			sampleContent = if (x$normalization.workflow['SampleContent'] != 'none') x$sample.summary.stats.norm$sampleContent.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)),
+			row.names = rownames(x$sample.summary.stats.norm)
 			);
 
-		colnames(normalization.factors.to.plot) <- c('positiveControls', 'negativeControls','sampleContent');
-		rownames(normalization.factors.to.plot) <- rownames(x$sample.summary.stats.norm);
+		normalization.factors.to.plot <- as.matrix(normalization.factors.to.plot);
+		#colnames(normalization.factors.to.plot) <- c('positiveControls', 'negativeControls','sampleContent');
+		#rownames(normalization.factors.to.plot) <- rownames(x$sample.summary.stats.norm);
 
 		# first convert normalizaton factors to percentages above and below mean.  remember a high NF reflects a low value.
 		normalization.factors.to.plot.scaled <- normalization.factors.to.plot;
@@ -527,7 +556,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 
 		# how many plots are needed
 		n.plots <- ceiling(nrow(normalization.factors.to.plot)/48);
-
+		
 		# loop over each set of 48 samples
 		for (n.plot in 1:n.plots) {
 
@@ -548,7 +577,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 					matrix(NA, nrow = 48 - nrow(normalization.factors.to.plot.scaled.n48), ncol = 3)
 					);
 				}
-
+			
 			# setup plotting environment
 			plot(
 				x = NA,
@@ -594,7 +623,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, tra
 				normalization.factors.to.plot.scaled.n48[,'positiveControls']) > 100 | 
 				abs(normalization.factors.to.plot.scaled.n48[,'negativeControls']) > 100 |
 				abs(normalization.factors.to.plot.scaled.n48[,'sampleContent']) > 100;
-
+			
 			# if best guess label the outliers
 			if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
 				outlier.samples.labels <- names(outlier.samples);

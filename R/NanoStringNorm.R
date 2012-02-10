@@ -1,4 +1,13 @@
-NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeCount = 'none', Background = 'none', SampleContent = 'none', otherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE) {
+NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'none', CodeCount = 'none', Background = 'none', SampleContent = 'none', otherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NULL, genes.to.predict, ...) {
+
+	# get correct list item from xls or NSN output
+	if (class(x) == 'NanoString') {
+		x <- x[[1]];
+		header <- x[[2]];
+		} 
+	else if (class(x) == 'NanoStringNorm') {
+		x <- x$normalized.data;
+		}
 
 	# format the annotation
 	if ( all(is.na(anno)) ) {
@@ -23,10 +32,15 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		anno <- x[,c('Code.Class', 'Name', 'Accession')];
 		x <- as.matrix(x[,!names(x) %in% c('Code.Class', 'Name', 'Accession')]);
 		rownames(x) <- anno$Name;
+	
+		# check for duplicate gene names
+		if ( any(duplicated(anno$Name)) & verbose == TRUE ) {
+			cat('NanoStringNorm: Note you have duplicate gene ids.  \n\tThis could cause issues in later processing or sorting.');
+			print(anno[duplicated(anno$Name),c("Code.Class","Name")]);
+			}
 
 		}
 	else {
-	
 		# make sure there are the same number of rows
 		if ( nrow(anno) != nrow(x) )  {
 			stop('NanoStringNorm: There are different number of rows in the annotation data (anno) and the code count data (x) ');
@@ -94,6 +108,10 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		}
 
 	# Check normalization parameters
+	if (!is.character(CodeCount) | !is.character(Background) | !is.character(SampleContent) | !is.character(otherNorm) ) {
+		stop('NanoStringNorm: The normalization methods need to be character values.');
+		} 
+
 	if ( !CodeCount %in% c('none', 'sum', 'geo.mean') ) {
 		stop('NanoStringNorm: Unrecognized CodeCount Normalization method');
 		}
@@ -103,7 +121,7 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 	if ( !SampleContent %in% c('none', 'housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean', 'top.geo.mean') ) {
 		stop('NanoStringNorm: Unrecognized SampleContent Normalization method');
 		}
-	if ( !otherNorm %in% c('none', 'quantile', 'zscore') ) {
+	if ( !otherNorm %in% c('none', 'quantile', 'zscore', 'rank.normal', 'vsn') ) {
 		stop('NanoStringNorm: Unrecognized otherNorm Normalization method');
 		}
 
@@ -143,17 +161,8 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		}
 	
 	# do other additional normalizations.  note these are applied to all endogenous probes but excluding counts equal to 0
-	if ( otherNorm %in% c('quantile', 'zscore') ) {
-		x <- rbind(
-			x[!grepl('Endogenous', anno$Code.Class),],
-			NanoStringNorm:::other.normalization(
-				x = x[grepl('Endogenous', anno$Code.Class),], 
-				anno = anno[grepl('Endogenous', anno$Code.Class),], 
-				otherNorm = otherNorm, 
-				verbose = verbose
-				)
-			);
-		x <- x[anno$Name,];
+	if ( otherNorm %in% c('quantile', 'zscore', 'rank.normal', 'vsn') ) {
+		x <- NanoStringNorm:::other.normalization(x = x, anno = anno, otherNorm = otherNorm, verbose = verbose, genes.to.fit = genes.to.fit, genes.to.predict = genes.to.predict);
 		}
 
 	# do rounding, log-transformation
@@ -177,12 +186,12 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 
 	# add the normalization factors to the sample summary stats
 	sample.summary.stats <- cbind(
-		sample.summary.stats,
-		pos.norm.factor = if (exists('pos.norm.factor')) pos.norm.factor else NA,
-		pos.controls = if (exists('pos.sample')) pos.sample else NA,
-		background.level = if (exists('background.level')) background.level else NA,
-		sampleContent.norm.factor = if (exists('sampleContent.norm.factor')) sampleContent.norm.factor else NA,
-		rna.content = if (exists('rna.content')) rna.content else NA,
+		round(sample.summary.stats, 3),
+		pos.norm.factor = if (exists('pos.norm.factor')) signif(pos.norm.factor,3) else NA,
+		pos.controls = if (exists('pos.sample')) signif(pos.sample,3) else NA,
+		background.level = if (exists('background.level')) signif(background.level,3) else NA,
+		sampleContent.norm.factor = if (exists('sampleContent.norm.factor')) signif(sampleContent.norm.factor,3) else NA,
+		rna.content = if (exists('rna.content')) signif(rna.content,3) else NA,
 		row.names = colnames(x)
 		);
 
@@ -222,7 +231,8 @@ NanoStringNorm <- function(x, anno = NA, Probe.Correction.Factor = 'none', CodeC
 		gene.summary.stats.norm = as.data.frame(gene.summary.stats.norm),
 		gene.summary.stats.raw = as.data.frame(gene.summary.stats.raw),
 		predicted.concentration = as.data.frame(predicted.concentration),
-		batch.effects = batch.effects
+		batch.effects = batch.effects,
+		traits = traits
 		);
 
 	class(x) <- 'NanoStringNorm';

@@ -48,7 +48,7 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 		#colnames(background.level.sd.from.mean) <- 'background.zscore';
 
 		if (verbose & any(abs(background.level.sd.from.mean) > 3)) {
-			cat('Background: The following samples have an estimated bacground greater than 3 standard deviations from the mean.\n\n');
+			cat('Background: The following samples have an estimated background greater than \n\t 3 standard deviations from the mean.\n\n');
 			print(signif(subset(background.level.sd.from.mean, abs(background.level.sd.from.mean) > 3),3));
 			cat('\n');
 			}
@@ -81,7 +81,7 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 		#colnames(samples.proportion.missing) <- 'proportion.missing';
 
 		if (verbose == TRUE) {
-			cat(paste('Background: After correction' , sum(samples.proportion.missing <= .90), 'samples and', sum(genes.proportion.missing <= .90), 'Endogenous genes have less than 90% missing. \n\n'));
+			cat(paste('Background: After correction' , sum(samples.proportion.missing <= .90), 'samples and', sum(genes.proportion.missing <= .90), '\n\tEndogenous genes have less than 90% missing. \n\n'));
 			}
 
 		if ( any(samples.proportion.missing > 0.9) ) {

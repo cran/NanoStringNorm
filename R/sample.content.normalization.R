@@ -49,7 +49,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 				);
 
 			# get the ranks of the RNA sums
-			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties = 'first');
+			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties.method = 'first');
 
 			rna.content <- apply(
 				X = x[endogenous.genes, ][rank.rna <= 75,],
@@ -69,7 +69,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 				);
 
 			# get the ranks of the RNA sums
-			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties = 'first');
+			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties.method = 'first');
 
 			rna.content <- apply(
 				X = x[endogenous.genes,][rank.rna <= 75,],
@@ -89,7 +89,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 		rna.content.sd.from.mean <- data.frame(rna.zscore = (rna.content - mean(rna.content)) / sd(rna.content));
 
 		if (verbose & any(abs(rna.content.sd.from.mean) > 3)) {
-			cat('SampleContent: The following samples have a normalization factor greater than 3 standard deviations from the mean.\n\n');
+			cat('SampleContent: The following samples have a normalization factor greater than \n\t3 standard deviations from the mean.\n\n');
 			print(signif(subset(rna.content.sd.from.mean, abs(rna.content.sd.from.mean) > 3),3));
 			cat('\n');
 			}

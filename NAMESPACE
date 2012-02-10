@@ -1,7 +1,9 @@
 export(
 	'NanoStringNorm',
 	'Plot.NanoStringNorm',
-	'read.xls.RCC'
+	'Plot.NanoStringNorm.gvis',
+	'read.xls.RCC',
+	'other.normalization'
 	)
 
 import(
