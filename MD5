@@ -1,9 +1,9 @@
-cad41c71b9e77963a5edcadb22e0a769 *DESCRIPTION
+3abe9c2449dba10ab1aee7d4a7170835 *DESCRIPTION
 de06f70e8705c23215207522e7110520 *NAMESPACE
 987d0e9650b7f2fcfbc4dd4c27bf3eee *NanoStringNorm.Rproj
 92ec1336a64e4bcb2a9d9dae9d416a24 *R/NanoStringNorm.R
 145a3013ae7b3e8ffb74f28083199472 *R/Plot.NanoStringNorm.R
-fba53cacb38729b7d608ed1d95132642 *R/Plot.NanoStringNorm.gvis.R
+c34bb51383f65e2ca858e00bf1c10a4a *R/Plot.NanoStringNorm.gvis.R
 6f9fa8a2db6b6480bb7579a8757f251e *R/background.normalization.R
 6f40135411631a3a74b8081072b6f637 *R/check.trait.values.R
 f8b8c9fd9ac8d41068744c88ca0b72da *R/code.count.normalization.R
@@ -27,8 +27,8 @@ ffc42c8e4401dba8741a0c41dff7162c *R/predict.concentration.R
 291796b8a4f310471af51e8f647da71a *R/sample.content.normalization.R
 d285b32a177a78681ac7a52f63b36a5c *R/unit.testing.NanoStringNorm.R
 e33d4377d2803b3170cd524f984d5b34 *data/NanoString.rda
-e52278c805a158e5a3942480cd5899bd *inst/doc/NanoStringNorm_Introduction.Rnw
-c8c179acbf01a10fd9142c262d81953c *inst/doc/NanoStringNorm_Introduction.pdf
+5c7259d281997edbae3c6da5bd301be7 *inst/doc/NanoStringNorm_Introduction.Rnw
+11ba5d400d77db467c24af1e0009d6b3 *inst/doc/NanoStringNorm_Introduction.pdf
 768c0f4312ad3ecd60dc8fdd916df0d6 *inst/extdata/RCC_files/RCCCollector1_rat_tcdd.xls
 0be120f3bf7f889974b161d7b2d02de5 *inst/extdata/input_function_files/2011-10-01_NanoString_mRNA_TCDD_strain_info.txt
 c294ebf5ea4165f6be0d42022f1419d3 *inst/extdata/input_function_files/2011-11-01_NanoString_mRNA_TCDD_anno.txt
@@ -74,7 +74,7 @@ dbd4d5afe0ec919e463d72aaa2e70056 *man/NanoString.mRNA.Rd
 3e3081017370124bab58eeefa5ef7859 *man/NanoStringNorm-package.Rd
 25a995f97b7e63eca24ba17f8ad72637 *man/NanoStringNorm.Rd
 78a090a8b1bec8dce732a92bb78a3416 *man/Plot.NanoStringNorm.Rd
-48a1f7272c56fb9f885e3a8c09bb8fe7 *man/Plot.NanoStringNorm.gvis.Rd
+42309057a91fa1fa793de8cb63213a13 *man/Plot.NanoStringNorm.gvis.Rd
 78b333feb425be025d20307e5b8876b2 *man/other.normalization.Rd
 3760819c6c4e3d1ec70d2f72acaebb99 *man/read.xls.RCC.Rd
 c86c9d88264b603eaf943ff90ee72621 *tests/NanoStringNorm.unitTests.R
@@ -92,7 +92,7 @@ e166977c5da25e4ac0c867f70e711e6c *vignettes/NanoStringNorm_Example_Plots_009.png
 33f7ad4bafec058b62e128da54b07600 *vignettes/NanoStringNorm_Example_Plots_010.png
 b6515876d9ab9fa06716a1701b03afa6 *vignettes/NanoStringNorm_Example_Plots_011.png
 60dfeada70bcf8a793acdd38fdbba0db *vignettes/NanoStringNorm_Example_Plots_012.png
-e52278c805a158e5a3942480cd5899bd *vignettes/NanoStringNorm_Introduction.Rnw
+5c7259d281997edbae3c6da5bd301be7 *vignettes/NanoStringNorm_Introduction.Rnw
 f2ff49ef9d7dc23e9c26dcd041922e75 *vignettes/NanoStringNorm_Introduction.lof
 06e313294f12741dce01a9b199f4b70f *vignettes/plot_NSN_gvis_geneStats_screenshot.png
 93f0bb67eb8a32174cca24cc89bba9fc *vignettes/plot_NSN_gvis_sampleStats_screenshot.png

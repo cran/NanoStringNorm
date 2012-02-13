@@ -7,7 +7,7 @@
          x,
          plot.type = c('gene.norm', 'gene.raw', 'sample'),
          save.plot = FALSE,
-         path.to.mongoose = NA,
+         path.to.mongoose = 'web',
 	 output.directory = 'NanoStringNorm_gvis_plots' 
          );
  
@@ -16,7 +16,7 @@
    \item{x}{An object of class NanoStringNorm i.e. the list output of NanoStringNorm}
    \item{plot.type}{A vector of the different plots that you would like.  Currently the following are implemented: gene.norm, gene.raw and sample.  These correspond to the list items in the NanoStringNorm     output. }
    \item{save.plot}{By default the plot is displayed on your browser using a built in web server.  This is good for quick evaluation if you have access to the underlying data.   However for distribution and presentations it is easier to save the plots bundled with an embedded web server.  You need to set save.plot to TRUE in order to get the bundled output.}
-   \item{path.to.mongoose}{The path to a previously downloaded version of the mongoose embedded web server. \url{http://code.google.com/p/mongoose/} If the path to mongoose is not specified then it will be attempted to be downloaded from the internet. If you do not want to attempt to download from the internet then specify 'none'. }
+   \item{path.to.mongoose}{The path to a previously downloaded version of the mongoose embedded web server. \url{http://code.google.com/p/mongoose/} If the path to mongoose is not specified then it will be attempted to be downloaded from the internet i.e. default path.to.mongoose = 'web'. If you do not want to attempt to download from the internet then specify 'none'. }
    \item{output.directory}{The name of the directory you want the output saved in. }
 }
 \value{

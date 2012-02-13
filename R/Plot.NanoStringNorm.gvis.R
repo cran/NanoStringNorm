@@ -1,5 +1,4 @@
-Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "sample"), save.plot = FALSE, path.to.mongoose = NA, output.directory = "NanoStringNorm_gvis_plots") {
-
+Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "sample"), save.plot = FALSE, path.to.mongoose = "web", output.directory = "NanoStringNorm_gvis_plots") {
 
 	if (!suppressPackageStartupMessages(require(googleVis))) {
 		stop ("Plot.NanoStringNorm.gvis:  googleVis is not available.");
@@ -31,7 +30,7 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 			colnames(data.to.plot)[1] <- 'Gene';
 			}
 		else if (grepl("sample", plot.item)) {
-			data.to.plot <- merge(data.to.plot, x$traits, by.x = 0, by.y = 0);
+			data.to.plot <- merge(data.to.plot, x$sample.summary.stats.norm, by.x = 0, by.y = 0);
 			colnames(data.to.plot)[1] <-  'Sample';
 			# add a prefix to the sample names because they sometimes cause errors
 			data.to.plot$Sample <- paste(1:nrow(data.to.plot), data.to.plot$Sample, sep = "-" );
@@ -80,11 +79,9 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 		# merge the chart and table
 		plot.merge <- gvisMerge(plot.motion, plot.table, horizontal = TRUE);
 
-		# plot using internal R webserver
-		plot(plot.merge);
-		
 		if (save.plot == TRUE) {
-			
+			# don't plot just save
+
 			# create a directory to dump the html files
 			if (!file.exists(output.directory))  {
 				dir.create(output.directory);
@@ -94,7 +91,7 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 			# note: mongoose was written under MIT licence http://code.google.com/p/mongoose/
 			# if no path to mongoose then download the mongoose executables and put them in the report directory
 			
-			if (is.na(path.to.mongoose)) {
+			if ((path.to.mongoose) == "web") {
 				download.file(url = "http://mongoose.googlecode.com/files/mongoose-3.0.exe", destfile = paste(output.directory,"/mongoose.exe",sep = ""));
 				download.file(url = "http://mongoose.googlecode.com/files/mongoose-3.0.tgz", destfile = paste(output.directory, "/mongoose.tgz", sep = ""));
 				cat("Plot.NanoStringNorm.gvis: Note that only the source code was downloaded for non windows systems.  You will have to untar and compile the code.  See the docs.\n");
@@ -103,9 +100,18 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 				if (file.exists(paste(path.to.mongoose, "/mongoose", sep = ""))) { 
 					file.copy(from = paste(path.to.mongoose, "/mongoose"), to = output.directory);
 					}
+				else {
+					cat("Plot.NanoStringNorm: No linux mongoose binary found.");
+					}
 				if (file.exists(paste(path.to.mongoose, "/mongoose.exe", sep = ""))) { 
 					file.copy(from = paste(path.to.mongoose, "/mongoose.exe"), to = output.directory);
 					}
+				else {
+					cat("Plot.NanoStringNorm: No windows mongoose binary found.");
+					}
+				}
+			else {
+				cat("Plot.NanoStringNorm: No mongoose binary found.  You will need to either download this or \n\t use an alternate method to display the interactive googleVis plots in the future.");
 				}
 
 			# Create Google Gadget
@@ -114,8 +120,13 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 			cat(plot.merge$html$chart, file=paste(output.directory, "/NanoStringNorm_gvis_", plot.item ,"_summary.html", sep = ""));
 
 			# print message about links
-			cat("Plot.NanoStringNorm.gvis: First run the mongoose binary found in the NanoStringNorm_gvis_plots and then navigate to http://127.0.01:8080 in your browser to view the plots\n");
+			cat("Plot.NanoStringNorm.gvis: First run the mongoose binary found in the NanoStringNorm_gvis_plots and \n\t then navigate to http://127.0.01:8080 in your browser to view the plots\n");
 			}
+		else {
+			# plot using internal R webserver
+			plot(plot.merge);
+			}
+
 
 		}
 	}
