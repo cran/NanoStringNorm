@@ -53,7 +53,7 @@ other.normalization.vsn <- function(x, anno, otherNorm = 'none', verbose = TRUE,
 		}
 	else {
 		# fit model on controls and predict on endogenous
-		x.fit <- vsn2(x.fit, minDataPointsPerStratum = 18, ...);
+		x.fit <- vsn2(x.fit, minDataPointsPerStratum = 16, ...);
 		x.predict <- predict(x.fit, newdata = x.predict, useDataInFit = FALSE);
 		}
 	

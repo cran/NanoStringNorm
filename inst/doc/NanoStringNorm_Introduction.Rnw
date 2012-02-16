@@ -269,7 +269,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 # vsn.
 # this time generate the parameters (fit the model) on the 'controls' 
 # and apply (predict) on the 'endogenous'
-# alternatively you may want to use the 'controls' for both fitting and predicting
+# alternatively you may want to use the endogenous probes for both fitting and predicting
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
 	otherNorm = 'vsn',
