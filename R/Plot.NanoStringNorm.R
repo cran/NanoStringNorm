@@ -124,8 +124,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		expressed.genes <- x$gene.summary.stats.norm$Mean > 1;
 
 		# get the density of the gene distributions
-		density.raw  <- density(na.omit(x$gene.summary.stats.raw[expressed.genes, 'CV']));
-		density.norm <- density(na.omit(x$gene.summary.stats.norm[expressed.genes,'CV']));
+		density.raw  <- density(na.omit(x$gene.summary.stats.raw[expressed.genes, 'CV']), from = 0);
+		density.norm <- density(na.omit(x$gene.summary.stats.norm[expressed.genes,'CV']), from = 0);
 
 		# setup the plotting dimensions
 		plot(
@@ -144,6 +144,20 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		box(col = 'grey60', lwd = 3);
 
 		# add the legend
+		cv.pos.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(64)", "POS_C(32)"), 'CV'], na.rm = TRUE),1);
+		cv.pos.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(64)", "POS_C(32)"), 'CV'], na.rm = TRUE),1);
+
+		cv.hk.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);
+		cv.hk.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);
+
+		legend(
+			x = 'topright',
+			legend = c('', '', paste('Pos' ,cv.pos.before, '% -->', cv.pos.after, '%'), paste('HKs', cv.hk.before, '% -->', cv.hk.after, '%')),
+			text.col = 'grey30',
+			bty = 'n',
+			xjust = 1
+			);
+
 		legend(
 			x = 'topright',
 			legend = c('Before Normalization', 'After Normalization'),
@@ -152,7 +166,6 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			lwd = 4,
 			bty = 'n'
 			);
-
 		}
 
 	#########################################################################################################
@@ -215,13 +228,17 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			trait.cex <- rep(.5,length(trait.p));
 			trait.cex[(trait.p > 2 | abs(trait.fc) > 2) & !is.na(trait.p)] <- 1 + x$gene.summary.stats.norm[(trait.p > 2 | abs(trait.fc) > 2) & !is.na(trait.p), 'Mean']/7;
 
+			# group counts
+			n1 <- sum(x$traits[,trait.name]==1,na.rm = TRUE);
+			n2 <- sum(x$traits[,trait.name]==2,na.rm = TRUE);
+
 			# setup the plotting environment
 			plot(
 				x = trait.fc,
 				y = trait.p,
 				xlab = 'Fold-change',
 				ylab = expression(paste('-lo',g[10],'P', sep = '')),
-				main = if (title == TRUE) paste('Gene: Differential Expression for\n',trait.name) else NA,
+				main = if (title == TRUE) paste('Gene: Differential Expression\n',trait.name, '(n =',n2,'vs',n1,')') else NA,
 				pch = 20,
 				col = trait.col,
 				cex = trait.cex,
@@ -551,8 +568,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 
 		# first convert normalizaton factors to percentages above and below mean.  remember a high NF reflects a low value.
 		normalization.factors.to.plot.scaled <- normalization.factors.to.plot;
-		normalization.factors.to.plot.scaled[normalization.factors.to.plot >= 1] <- -100 * (normalization.factors.to.plot[normalization.factors.to.plot >= 1] - 1);
-		normalization.factors.to.plot.scaled[normalization.factors.to.plot < 1 ] <- 100 * (1/(normalization.factors.to.plot[normalization.factors.to.plot < 1]) - 1) ;
+		normalization.factors.to.plot.scaled[normalization.factors.to.plot >= 1] <- 100 * (normalization.factors.to.plot[normalization.factors.to.plot >= 1] - 1);
+		normalization.factors.to.plot.scaled[normalization.factors.to.plot < 1 ] <- -100 * (1/(normalization.factors.to.plot[normalization.factors.to.plot < 1]) - 1) ;
 
 		# how many plots are needed
 		n.plots <- ceiling(nrow(normalization.factors.to.plot)/48);

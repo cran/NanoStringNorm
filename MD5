@@ -1,9 +1,9 @@
-187c031b193a7b7a5ec81167384ae13c *DESCRIPTION
+3cb88ac7fe0a6dfc0072731219508ee8 *DESCRIPTION
 de06f70e8705c23215207522e7110520 *NAMESPACE
 987d0e9650b7f2fcfbc4dd4c27bf3eee *NanoStringNorm.Rproj
-b0b41c59ef355314c635c3c1eb6ace26 *R/NanoStringNorm.R
-145a3013ae7b3e8ffb74f28083199472 *R/Plot.NanoStringNorm.R
-c34bb51383f65e2ca858e00bf1c10a4a *R/Plot.NanoStringNorm.gvis.R
+7d1e7376e3d35f27de88a6d8476ecc78 *R/NanoStringNorm.R
+7e36c7fa140497f7327f32544505f1a7 *R/Plot.NanoStringNorm.R
+eb87d5ba60736a79a6c71ce3972bb9e9 *R/Plot.NanoStringNorm.gvis.R
 6f9fa8a2db6b6480bb7579a8757f251e *R/background.normalization.R
 6f40135411631a3a74b8081072b6f637 *R/check.trait.values.R
 f8b8c9fd9ac8d41068744c88ca0b72da *R/code.count.normalization.R
@@ -28,7 +28,7 @@ ffc42c8e4401dba8741a0c41dff7162c *R/predict.concentration.R
 d285b32a177a78681ac7a52f63b36a5c *R/unit.testing.NanoStringNorm.R
 e33d4377d2803b3170cd524f984d5b34 *data/NanoString.rda
 667b28828dec02bf3d69fc004ec09cc0 *inst/doc/NanoStringNorm_Introduction.Rnw
-300d87464bf9a92be7215c991932108c *inst/doc/NanoStringNorm_Introduction.pdf
+71e43bad0778a58fc7f814c4569b7c9a *inst/doc/NanoStringNorm_Introduction.pdf
 768c0f4312ad3ecd60dc8fdd916df0d6 *inst/extdata/RCC_files/RCCCollector1_rat_tcdd.xls
 0be120f3bf7f889974b161d7b2d02de5 *inst/extdata/input_function_files/2011-10-01_NanoString_mRNA_TCDD_strain_info.txt
 c294ebf5ea4165f6be0d42022f1419d3 *inst/extdata/input_function_files/2011-11-01_NanoString_mRNA_TCDD_anno.txt
@@ -73,8 +73,8 @@ cb733ed7036b7c7a25ac3211c4603396 *inst/unitTests/test_sample.content.normalizati
 dbd4d5afe0ec919e463d72aaa2e70056 *man/NanoString.mRNA.Rd
 3e3081017370124bab58eeefa5ef7859 *man/NanoStringNorm-package.Rd
 25a995f97b7e63eca24ba17f8ad72637 *man/NanoStringNorm.Rd
-78a090a8b1bec8dce732a92bb78a3416 *man/Plot.NanoStringNorm.Rd
-42309057a91fa1fa793de8cb63213a13 *man/Plot.NanoStringNorm.gvis.Rd
+56aa7ddbaae8c44a5db1e6d0b3a636e7 *man/Plot.NanoStringNorm.Rd
+64263fb02ca97ec152938837b32bb417 *man/Plot.NanoStringNorm.gvis.Rd
 6d36aef371ecb7d2b6c9f701b70ee0ea *man/other.normalization.Rd
 3760819c6c4e3d1ec70d2f72acaebb99 *man/read.xls.RCC.Rd
 c86c9d88264b603eaf943ff90ee72621 *tests/NanoStringNorm.unitTests.R

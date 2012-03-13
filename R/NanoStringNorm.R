@@ -72,7 +72,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 	# start printing analysis log
 	if (verbose) {
 		cat('\n##############################\n');
-		cat(paste('### NanoStringNorm v', packageDescription('NanoStringNorm')$Version, '   ###\n', sep = ''));
+		cat(paste('### NanoStringNorm v', packageDescription('NanoStringNorm')$Version, '  ###\n', sep = ''));
 		cat('##############################\n\n');
 		cat(paste('There are', ncol(x),'samples and', sum(grepl('Endogenous', anno$Code.Class)), 'Endogenous genes \n\n')); 
 		}

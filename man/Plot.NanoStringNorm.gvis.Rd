@@ -5,7 +5,7 @@
  \usage{
  Plot.NanoStringNorm.gvis(
          x,
-         plot.type = c('gene.norm', 'gene.raw', 'sample'),
+         plot.type = c('gene.norm', 'sample'),
          save.plot = FALSE,
          path.to.mongoose = 'web',
 	 output.directory = 'NanoStringNorm_gvis_plots' 

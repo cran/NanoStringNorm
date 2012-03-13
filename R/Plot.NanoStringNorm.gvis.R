@@ -1,4 +1,4 @@
-Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "sample"), save.plot = FALSE, path.to.mongoose = "web", output.directory = "NanoStringNorm_gvis_plots") {
+Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm", "sample"), save.plot = FALSE, path.to.mongoose = "web", output.directory = "NanoStringNorm_gvis_plots") {
 
 	if (!suppressPackageStartupMessages(require(googleVis))) {
 		stop ("Plot.NanoStringNorm.gvis:  googleVis is not available.");
@@ -26,12 +26,12 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 		
 		# add the annotation and dummy time variable for classification in plotting
 		if (grepl("gene", plot.item) ) { 
-			data.to.plot <- cbind(x$raw.data[,c('Name','Code.Class')],data.to.plot);
-			colnames(data.to.plot)[1] <- 'Gene';
+			data.to.plot <- data.frame(Gene = rownames(data.to.plot), time = 1, Code.Class = x$raw.data$Code.Class, data.to.plot);
 			}
 		else if (grepl("sample", plot.item)) {
-			data.to.plot <- merge(data.to.plot, x$sample.summary.stats.norm, by.x = 0, by.y = 0);
-			colnames(data.to.plot)[1] <-  'Sample';
+			data.to.plot <- data.to.plot[rownames(x$traits),];
+			data.to.plot <- data.frame(Sample = rownames(data.to.plot), time = 1, data.to.plot, x$traits);
+			#colnames(data.to.plot)[1] <-  'Sample';
 			# add a prefix to the sample names because they sometimes cause errors
 			data.to.plot$Sample <- paste(1:nrow(data.to.plot), data.to.plot$Sample, sep = "-" );
 			}
@@ -71,6 +71,8 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm","gene.raw", "s
 			);
 		
 		# create a data table containing the plotted data
+		data.to.plot$time <- NULL;
+
 		plot.table <- gvisTable(
 			data = data.to.plot,
 			options=list(width=600, height=700)
