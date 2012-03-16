@@ -11,7 +11,7 @@ NanoStringNorm(
 	CodeCount = 'none', 
 	Background = 'none', 
 	SampleContent = 'none', 
-	otherNorm = 'none', 
+	OtherNorm = 'none', 
 	round.values = FALSE, 
 	log = FALSE, 
 	return.matrix.of.endogenous.probes = FALSE, 
@@ -31,7 +31,7 @@ NanoStringNorm(
   \item{CodeCount}{The method used to normalize for technical assay variation.  The options are \emph{'none'} and \emph{'sum'} and \emph{'geo.mean'} (geometric mean).  The method adjusts each sample based on its relative value to all samples.  The geometric mean may be less susceptible to extreme values.  The CodeCount normalization is applied first and is considered the most fundamental Normalization step for technical variation.}
   \item{Background}{The method used to estimate the background count level.  Background is calculated based on negative controls and the options are \emph{'none', 'mean', 'mean.2sd', 'max'}.  Mean is the least is the least conservative, while max and mean.2sd are the most robust to false positives.  The calculated background is subtracted from each sample.  Background is calculated after code count adjustment.}
   \item{SampleContent}{The method used to normalize for sample or RNA content i.e. pipetting fluctuations.  The options are \emph{'none', 'housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean'} and \emph{'top.geo.mean'}.  The Housekeeping options require a set of annotated genes.  For RNA datasets the genes can be specified by editing the Code.Class field to equal 'Housekeeping' or 'Control'.  miRNA Code Sets generally already have annotated Housekeeping genes.  Note that the Housekeeping genes on miRNA Code Sets are messenger RNAs and therefore undergo a different laboratory process, specifically no ligation.  If using Housekeeping genes then 'housekeeping.geo.mean' is recommended.  Alternatively, you can use the method \emph{'total.sum'} which uses the sum of the all the genes or \emph{'top.geo.mean'} which uses the geometric mean of the top 75 expressed.  Sample Content adjustment is applied after Code Count and Background correction.  }
-  \item{otherNorm}{Some additional normalization methods.  Options include 'none', 'quantile' and 'zscore'.  otherNorm is applied after CodeCount, Background, SampleContent normalizations.  This is probably the largest source of inter sample variation in most studies.}
+  \item{OtherNorm}{Some additional normalization methods.  Options include 'none', 'quantile' and 'zscore'.  OtherNorm is applied after CodeCount, Background, SampleContent normalizations.  This is probably the largest source of inter sample variation in most studies.}
   \item{round.values}{Should the values be rounded to the nearest absolute count or integer.  This simplifies interpretation if taking the log by removing values 0-1 which result in negatives.}
   \item{log}{Should a log2 transformation of the data be used.  Taking the log may help distributional assumptions and consistency with PCR based methods for calculating fold change.}
   \item{return.matrix.of.endogenous.probes}{If true a matrix of normalized Endogenous code counts is returned.  Annotation columns and control probes are removed.  This can be useful if you the output is being used directly for downstream analysis.  By default it is FALSE and list of objects including descriptive and diagnostics are returned.}
@@ -40,7 +40,7 @@ NanoStringNorm(
   \item{verbose}{Output comments on run-status}
   \item{genes.to.fit}{The set of genes used to generate the normalization parameters.  You can specify a vector of code classes or gene names as indicated in the annotation.  Alternatively, you can use descriptors such as 'all', 'controls', 'endogenous'.  For most methods the model will be fit and applied to the endogenous genes.  In some cases such as vsn you may want to vary this approach.}
   \item{genes.to.predict}{The set of genes that the parameters or model is applied to.}
-  \item{...}{The ellipses are included to allow flexible use of parameters that are required by otherNorm methods.  For example the use of \emph{'strata' or 'calib'} parameters documented in the vsn package.  }
+  \item{...}{The ellipses are included to allow flexible use of parameters that are required by OtherNorm methods.  For example the use of \emph{'strata' or 'calib'} parameters documented in the vsn package.  }
 }
 \details{
 The code is based on the NanoString analysis guidelines (see references).  The function allows normalization of both mRNA and miRNA NanoString expression data.  The order of the methods is fixed but the use of the method \emph{'none'} and multiple iterations of the functions allows flexibility.

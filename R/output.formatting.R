@@ -1,24 +1,24 @@
-output.formatting <- function(x, anno, otherNorm = 'none', round.values = FALSE, log = FALSE, verbose = TRUE) {
+output.formatting <- function(x, anno, OtherNorm = 'none', round.values = FALSE, log = FALSE, verbose = TRUE) {
 
 	if ( (!is.logical(round.values) | !is.logical(log)) | is.na(round.values) | is.na(log) ) {
 		stop('Formatting: Round and Log need to be TRUE or FALSE\n\n');
 		}
 
+	# shouldn't be log-transforming z-scores
+	if (OtherNorm %in% c('rank.normal','zscore') & verbose == TRUE) {
+		cat('Formatting: log/rounding of zscores/rank.normal is intentionally not implemented.\n\n');
+		}
+	
 	# round the data to discrete values.
 	if (round.values == TRUE) {
 		x <- round(x, digits = 0);
 		}
 
-	# shouldn't be log-transforming z-scores
-	if (log == TRUE & otherNorm == 'zscore') {
-		stop('Formatting: log-transformation of z-scores is intentionally not implemented.  Set log = FALSE.\n\n');
-		}
-
 	# log2 transformation
-	if (log == TRUE & otherNorm != 'zscore') {
+	if (log == TRUE & OtherNorm != 'zscore') {
 
 		# handle negative values
-		if (any(x < 1)) {
+		if (any(na.omit(x) < 1)) {
 
 			if (verbose) {
 				cat('log: Setting values less than 1 to 1 in order to calculate the log in positive space.\n\n');

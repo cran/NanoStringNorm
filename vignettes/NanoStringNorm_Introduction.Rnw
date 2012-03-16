@@ -222,7 +222,7 @@ Several examples include:
 # good for meta-analysis and cross platform comparison abstraction of effect size
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
-	otherNorm = 'zscore',
+	OtherNorm = 'zscore',
 	return.matrix.of.endogenous.probes = TRUE
 	);
 @
@@ -232,7 +232,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 # use quantiles to transform each sample to the normal distribution
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
-	otherNorm = 'rank.normal',
+	OtherNorm = 'rank.normal',
 	return.matrix.of.endogenous.probes = TRUE
 	);
 @
@@ -243,7 +243,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 # rank across sample. then transform each sample to the empirical distribution.
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
-	otherNorm = 'quantile',
+	OtherNorm = 'quantile',
 	return.matrix.of.endogenous.probes = FALSE
 	);
 @
@@ -258,7 +258,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 # systematic differences
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
-	otherNorm = 'vsn',
+	OtherNorm = 'vsn',
 	return.matrix.of.endogenous.probes = FALSE,
 	genes.to.fit = 'all',
 	genes.to.predict = 'all'
@@ -272,7 +272,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 # alternatively you may want to use the endogenous probes for both fitting and predicting
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
-	otherNorm = 'vsn',
+	OtherNorm = 'vsn',
 	return.matrix.of.endogenous.probes = FALSE,
 	genes.to.fit = 'controls',
 	genes.to.predict = 'endogenous'
@@ -290,7 +290,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	CodeCount = 'sum',
 	Background = 'mean',
 	SampleContent = 'top.geo.mean',
-	otherNorm = 'vsn',
+	OtherNorm = 'vsn',
 	return.matrix.of.endogenous.probes = FALSE,
 	genes.to.fit = 'endogenous',
 	genes.to.predict = 'endogenous',
@@ -466,7 +466,7 @@ Scatterplot of positive and negative control counts.  The green points show the 
 \end{center}\end{figure*}
 %
 
-
+\newpage
 %------------------------------------------------------------
 \section{Interactive Plotting}\label{sec:interactive.plotting}
 %------------------------------------------------------------
@@ -517,6 +517,62 @@ A screen capture of the interactive Google chart for samples.  Axis, colour and 
 \end{center}\end{figure*}
 %
 \newpage
+\newpage
+
+%------------------------------------------------------------
+\section{Best Normalization Method}\label{sec:method.comparison}
+%------------------------------------------------------------
+
+Different code sets and study designs are better suited towards alternative normalization strategies.  This is an area of active research and development.  In this section I'll outline several basic strategies for evaluating how well a particular method is doing at removing technical variation.  The function  \Rfunction{norm.comp} is a simple interface for looping over a set of methods and summarizing comparisons.  Options include:
+
+\begin{enumerate}
+\item Signal to noise or \emph{Coefficient of Variation} (CV) for control genes.  The CV of the Positive controls is proportional to the technical variability introduced by the nCounter platform.  The CV for the Housekeeping controls is proportional to the confounding biological variation due to sample input.  The mean Endogenous CV shows the global noise of experimentally observed genes.  Methods that minimize the CV are generally considered better.  Be careful in comparing methods that change the scale of the measured counts i.e. zscores and vsn.
+\item Correlation between replicates.  If multiple groups of replicates are assayed then the \emph{Intra Class Correlation} (ICC) is calculated.  ICC is defined as the ratio of \emph{between} group variation to the \emph{total} variation.  Variation between groups is relative to the correlation within groups.  Replicates can be purely technical or reflect experimental design influences.  For example titrations of different input RNA, samples run on different dates or even well chosen biological replicates.
+\item Trait Discrimination.  A method that maximizes trait difference i.e. Tumour - Normal status, could be considered good at removing technical variation.  Similarly, any method that maximizes the predictive accuracy between two datasets would be desirable.  This is not yet implemented.
+\end{enumerate}
+
+Ideally, for large projects and new code sets, a pilot study will be run in order to optimize the normalization choice.  For past projects we have chosen triplicate titrations of four samples and triplicate technical replicates for two tumour and two normal samples.  Both designs require a twelve samples or a single cartridge.
+
+
+<<eg.norm.comp, eval=FALSE>>=
+# compare normalization methods using coefficient of variation 
+# of controls (CV) and correlation of replicates (ICC)
+
+# specifiy housekeeping genes in annotation 
+NanoString.mRNA[NanoString.mRNA$Name %in% 
+  c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),'Code.Class'] <- 'Housekeeping';
+
+# strain x experimental condition i.e. replicate.
+# this is only a small subset of the original data  used for the plot
+biological.replicates <- c("HW_1.5_0","HW_1.5_0","HW_1.5_0","HW_1.5_100","HW_1.5_100","HW_1.5_100",
+                     "HW_6_100","HW_6_100","HW_3_100","HW_3_100","HW_3_100","HW_3_100",
+                     "LE_19_0","LE_19_0","LE_19_0","LE_96_0","LE_96_0","LE_96_0","HW_10_100",
+                     "HW_10_100","HW_10_100","HW_10_100","HW_6_100","HW_6_100","HW_96_0");
+
+norm.comp.results.test <- norm.comp(
+  x = NanoString.mRNA,
+  replicates = biological.replicates,
+  CodeCount.methods = 'none',
+  Background.methods = 'none', 
+  SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean',
+                            'top.mean', 'top.geo.mean'), 
+  OtherNorm.methods = 'none',
+  verbose = FALSE
+  );
+@
+
+In this example zscore normalization is ranked the highest based on ICC and interestingly sample content is better adjusted using total RNA and not the Housekeeping genes.  Also of note 
+
+\begin{figure*}[h]\begin{center}
+\includegraphics[width=.8\textwidth]{Rat_Strain_Normalization_Method_Comparison.png}  
+\caption{\label{Rat_Strain_Normalization_Method_Comparison}%
+A histogram of ICC for all possible normalization methods on the rat strain data.
+}
+\end{center}\end{figure*}
+%
+
+\newpage
+
 
 %------------------------------------------------------------
 \section{Study Design Related Issues}\label{sec:issues}

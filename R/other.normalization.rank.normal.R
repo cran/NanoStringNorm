@@ -1,7 +1,7 @@
-other.normalization.rank.normal <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit = NULL, genes.to.predict = NULL) { 
+other.normalization.rank.normal <- function(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA) { 
 	
-	genes.to.fit <- if(is.null(genes.to.fit)) "endogenous" else genes.to.fit;
-	genes.to.predict <- if(is.null(genes.to.predict)) "endogenous" else genes.to.predict
+	genes.to.fit <- if(is.na(genes.to.fit)) "all" else genes.to.fit;
+	genes.to.predict <- if(is.na(genes.to.predict)) "all" else genes.to.predict
 	
 	# parse the genes.to.fit options
 	if (any(genes.to.fit == 'all')) {
@@ -27,6 +27,8 @@ other.normalization.rank.normal <- function(x, anno, otherNorm = 'none', verbose
 		}
 	
 	# rank (forced normal) normalization
+	x.fit[x.fit == 0] <- NA;
+
 	x <- apply(
 		X = x.fit,
 		MARGIN = 2,

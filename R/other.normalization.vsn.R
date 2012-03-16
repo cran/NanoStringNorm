@@ -1,8 +1,8 @@
-other.normalization.vsn <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit = NULL, genes.to.predict = NULL, ...) {
+other.normalization.vsn <- function(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, ...) {
 
 	# set the defaults to use all genes
-	genes.to.fit = if(is.null(genes.to.fit)) "all" else genes.to.fit;
-	genes.to.predict = if(is.null(genes.to.predict)) "all" else genes.to.predict;
+	genes.to.fit = if(is.na(genes.to.fit)) "all" else genes.to.fit;
+	genes.to.predict = if(is.na(genes.to.predict)) "all" else genes.to.predict;
 
 	# do not proceed if vsn cannot be loaded
 	if (!require(vsn)) {
@@ -48,12 +48,12 @@ other.normalization.vsn <- function(x, anno, otherNorm = 'none', verbose = TRUE,
 	if ( all(genes.to.fit == genes.to.predict) ) {
 		# using common data
 		# x.fit <- justvsn(x.fit);
-		x.fit <- vsn2(x.fit, ...);
+		x.fit <- vsn2(x.fit, verbose = verbose, ...);
 		x.predict <- predict(x.fit, newdata = x.predict, useDataInFit = TRUE);
 		}
 	else {
 		# fit model on controls and predict on endogenous
-		x.fit <- vsn2(x.fit, minDataPointsPerStratum = 16, ...);
+		x.fit <- vsn2(x.fit, minDataPointsPerStratum = 16, verbose = verbose, ...);
 		x.predict <- predict(x.fit, newdata = x.predict, useDataInFit = FALSE);
 		}
 	

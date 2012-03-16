@@ -1,21 +1,20 @@
-other.normalization <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit, genes.to.predict, ...) { 
+other.normalization <- function(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, ...) { 
 	
-	if (otherNorm == 'quantile') {
-		x = other.normalization.quantile(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
+	if (OtherNorm == 'quantile') {
+		x = NanoStringNorm:::other.normalization.quantile(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
 		}
-	else if (otherNorm == 'zscore') {
-		x = other.normalization.zscore(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
+	else if (OtherNorm == 'zscore') {
+		x = NanoStringNorm:::other.normalization.zscore(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
 		}
-	else if (otherNorm == 'rank.normal') {
-		x = other.normalization.rank.normal(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
+	else if (OtherNorm == 'rank.normal') {
+		x = NanoStringNorm:::other.normalization.rank.normal(x, anno, verbose = verbose, genes.to.fit = genes.to.fit);
 		}
-	else if (otherNorm == 'vsn') {
-		x = other.normalization.vsn(x, anno, verbose = verbose, genes.to.fit = genes.to.fit, genes.to.predict = genes.to.predict);
+	else if (OtherNorm == 'vsn') {
+		x = NanoStringNorm:::other.normalization.vsn(x, anno, verbose = verbose, genes.to.fit = genes.to.fit, genes.to.predict);
 		}
 	else {
-		stop(paste('otherNorm:  The otherNorm option', otherNorm, 'is not implemented try using one of quantile, zscore, rank.normal, vsn.'));
+		stop(paste('OtherNorm:  The OtherNorm option', OtherNorm, 'is not implemented try using one of quantile, zscore, rank.normal, vsn.'));
 		}
 
-	#rownames(x) <- anno$Name;
 	return(x);
 	}

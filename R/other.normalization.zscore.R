@@ -1,7 +1,7 @@
-other.normalization.zscore <- function(x, anno, otherNorm = 'none', verbose = TRUE, genes.to.fit = NULL, genes.to.predict = NULL) { 
+other.normalization.zscore <- function(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA) { 
 	
-	genes.to.fit <- if(is.null(genes.to.fit)) "endogenous" else genes.to.fit;
-	genes.to.predict = if(is.null(genes.to.predict)) "endogenous" else genes.to.predict;
+	genes.to.fit <- if(is.na(genes.to.fit)) "all" else genes.to.fit;
+	genes.to.predict = if(is.na(genes.to.predict)) "all" else genes.to.predict;
 
 	# parse the genes.to.fit options
 	if (any(genes.to.fit == 'all')) {
@@ -25,8 +25,11 @@ other.normalization.zscore <- function(x, anno, otherNorm = 'none', verbose = TR
 			print(anno[!genes.to.fit,c("Code.Class","Name")]);
 			}
 		}
-	
+
 	#### START METHOD #########################################################################
+	
+	x.fit[x.fit == 0] <- NA;
+
 	# z-score (standard normal) normalization
 	x.fit <- apply(
 		X = x.fit,
