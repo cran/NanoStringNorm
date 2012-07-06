@@ -1,7 +1,21 @@
-norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE) { 
+norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE) { 
 
 	if (!require("lme4")) {
-		stop("norm.comp: lme4 is required");	
+		stop("norm.comp: lme4 is required");
+		}
+
+	# get correct list item from xls or NSN output
+	if (class(x) == 'NanoString') {
+		x <- x[[1]];
+		header <- x[[2]];
+		} 
+	else if (class(x) == 'NanoStringNorm') {
+		x <- x$normalized.data;
+		}
+
+	# if
+	if (is.null(replicates)) {
+		replicates <- colnames(x[!colnames(x) %in% c("Name", "Code.Class", "Accession")]);
 		}
 
 	# check the samples in the replicates
@@ -23,8 +37,8 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 	cv.end.results <- NULL;
 	icc.anova.results <- NULL;
 	icc.mixed.results <- NULL;
-	corr.group.results <- NULL;
-	cv.group.results <- NULL;
+	#corr.group.results <- NULL;
+	#cv.group.results <- NULL;
 
 	# function for coefficient of variation with scaling of negative values
 	get.cv <- function(x) {
@@ -85,7 +99,7 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 		for (Background.method in Background.methods){
 			for (SampleContent.method in SampleContent.methods) {
 				for (OtherNorm.method in OtherNorm.methods) {
-					if (OtherNorm.method %in% c("zscore", "rank.normal") & (CodeCount.method != "none" | SampleContent.method != "none" )) next;				
+					if (OtherNorm.method %in% c("zscore", "rank.normal") & (CodeCount.method != "none" | SampleContent.method != "none" )) next;
 
 					if (verbose == TRUE) {
 						print(paste(CodeCount.method, Background.method, SampleContent.method, OtherNorm.method, sep="_"));
@@ -100,11 +114,11 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 						OtherNorm = OtherNorm.method,
 						log = TRUE,
 						verbose = FALSE,
-						return.matrix.of.endogenous.probes = FALSE	
+						return.matrix.of.endogenous.probes = FALSE
 						);
 
 					#data.nsn <- data.nsn[[1]][grepl("[Ee]ndogenous", data.nsn[[1]]$Code.Class),-c(1:3)];
-					data.nsn <- data.nsn[[1]][,-c(1:3)];					
+					data.nsn <- data.nsn[[1]][,-c(1:3)];
 
 					if (OtherNorm.method %in% c("rank.normal","zscore")) {
 						# calc missing
@@ -132,13 +146,13 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 						);
 					
 					# output pos, hk, eng cv change
-					cv.pos <- mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)")], na.rm = TRUE);
+					cv.pos <- mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)", "POS_D(2)")], na.rm = TRUE);
 					cv.hk <- mean(cv[x$Code.Class %in% c("Control", "Housekeeping")], na.rm = TRUE);
 					cv.end <- mean(cv[grepl("End", x$Code.Class)], na.rm = TRUE);
-	
+
 					# only try icc if more than 1 group	
 					if (nlevels(as.factor(replicates[is.duplicated(replicates)])) > 1) {
-			
+
 						# fit model with and compare residual error
 						icc.anova <- apply(
 							X = data.nsn[grepl("[Ee]ndogenous", x$Code.Class),],
@@ -147,7 +161,7 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 							replicates = replicates,
 							method = "anova"
 							);
-						
+
 						icc.anova <- median(icc.anova, na.rm = TRUE);
 
 						icc.mixed <- apply(
@@ -157,23 +171,23 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 							replicates = replicates,
 							method = "mixed"
 							);
-						
+
 						icc.mixed <- median(icc.mixed, na.rm = TRUE);
-						
-						corr.group <- NA;
-						cv.group <- NA;
+
+#						corr.group <- NA;
+#						cv.group <- NA;
 						}
 					else {
-	
-						corr.group <- get.mean.corr(data.nsn[,is.duplicated(replicates)], ignore.pc = .1);
-						
-						cv.group <- apply(
-							X = data.nsn[,is.duplicated(replicates)],
-							MARGIN = 1,
-							FUN = get.cv
-							);
 
-						cv.group <- mean(cv.group, na.rm = TRUE); 
+#						corr.group <- get.mean.corr(data.nsn[,is.duplicated(replicates)], ignore.pc = .1);
+
+#						cv.group <- apply(
+#							X = data.nsn[,is.duplicated(replicates)],
+#							MARGIN = 1,
+#							FUN = get.cv
+#							);
+
+#						cv.group <- mean(cv.group, na.rm = TRUE); 
 
 						icc.anova <- NA;
 						icc.mixed <- NA;
@@ -191,8 +205,8 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 			
 					icc.anova.results <- c(icc.anova.results, round(icc.anova,3));
 					icc.mixed.results <- c(icc.mixed.results, round(icc.mixed,3));
-					corr.group.results <- c(corr.group.results, round(corr.group,1));
-					cv.group.results <- c(cv.group.results, round(cv.group,1));
+					#corr.group.results <- c(corr.group.results, round(corr.group,1));
+					#cv.group.results <- c(cv.group.results, round(cv.group,1));
 					}
 				}
 			}
@@ -207,20 +221,21 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 		cv.pos.results = cv.pos.results,
 		cv.hk.results = cv.hk.results,
 		cv.end.results = cv.end.results,
-		corr.group.results = corr.group.results,
-		cv.group.results = cv.group.results,
+		#corr.group.results = corr.group.results,
+		#cv.group.results = cv.group.results,
 		icc.anova.results = icc.anova.results,
-		icc.mixed.results = icc.mixed.results
+		icc.mixed.results = icc.mixed.results,
+		stringsAsFactors = FALSE
 		);
-	
-	if (nlevels(as.factor(replicates[is.duplicated(replicates)])) > 1) {
-		norm.comp.results$corr.group.results <- NULL;
-		norm.comp.results$cv.group.results <- NULL;
-		}
-	else {
-		norm.comp.results$icc.mixed.results <- NULL;
-		norm.comp.results$icc.anova.results <- NULL;
-		}
+
+#	if (nlevels(as.factor(replicates[is.duplicated(replicates)])) > 1) {
+#		norm.comp.results$corr.group.results <- NULL;
+#		norm.comp.results$cv.group.results <- NULL;
+#		}
+#	else {
+#		norm.comp.results$icc.mixed.results <- NULL;
+#		norm.comp.results$icc.anova.results <- NULL;
+#		}
 
 	if (histogram == TRUE) {
 		ns.green.rgb  <- rgb(193, 215, 66, maxColorValue = 255);
@@ -240,9 +255,9 @@ norm.comp <- function(x, anno, replicates,  CodeCount.methods = c('none', 'sum',
 		density.icc <- density(na.omit(norm.comp.results$icc.mixed.results));
 		lines(density.icc, lwd = 4, col = ns.green.rgb);
 
-		box(col = 'grey60', lwd = 3);	
-			
+		box(col = 'grey60', lwd = 3);
+
 		}
 
-	return(norm.comp.results);	
+	return(norm.comp.results);
 	}

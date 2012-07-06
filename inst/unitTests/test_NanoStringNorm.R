@@ -3,8 +3,8 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 	# go to test data directory
 	path.to.input.files <- '../NanoStringNorm/extdata/input_function_files/';
 	path.to.output.files <- '../NanoStringNorm/extdata/output_function_files/';
-	#path.to.input.files <- '../extdata/input_function_files/';
-	#path.to.output.files <- '../extdata/output_function_files/';
+#	path.to.input.files <- '../extdata/input_function_files/';
+#	path.to.output.files <- '../extdata/output_function_files/';
 
 	# read input files
 	x             <- read.table(paste(path.to.input.files, date.input, '_NanoString_mRNA_TCDD_matrix.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
@@ -19,7 +19,7 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 	# run function to get *test output* 
 	test.output.NSN.none   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE);
 	test.output.NSN.none.matrix   <- NanoStringNorm:::NanoStringNorm(x, anno, verbose = FALSE, return.matrix.of.endogenous.probes = TRUE);
-#browser();
+	
 	test.output.NSN.random <- NanoStringNorm:::NanoStringNorm(
 		x = x, 
 		anno = anno, 
@@ -43,7 +43,7 @@ test.NSN <- function(date.input = '2011-11-04', date.checked.output = '2011-11-0
 		verbose = FALSE,
 		predict.conc = TRUE
 		);
-	
+#browser()
 	### check1 - compare checked output == test output
 	check1.1 <- checkEquals(checked.output.NSN.none, test.output.NSN.none);
 	check1.2 <- checkEquals(checked.output.NSN.none.matrix, test.output.NSN.none.matrix);

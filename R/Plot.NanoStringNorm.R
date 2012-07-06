@@ -144,8 +144,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		box(col = 'grey60', lwd = 3);
 
 		# add the legend
-		cv.pos.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(64)", "POS_C(32)"), 'CV'], na.rm = TRUE),1);
-		cv.pos.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(64)", "POS_C(32)"), 'CV'], na.rm = TRUE),1);
+		cv.pos.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)"), 'CV'], na.rm = TRUE),1);
+		cv.pos.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)"), 'CV'], na.rm = TRUE),1);
 
 		cv.hk.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);
 		cv.hk.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);

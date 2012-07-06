@@ -38,7 +38,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 		nrow = 16,
 		strip.white = TRUE
 		);
-	
+
 	# parse the header
 
 	# drop missing rows
@@ -104,5 +104,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 	cat(paste("\n\nThere were", nrow(x), "genes imported with the following Code Class breakdown:"));
 	print(table(x$Code.Class));
 
-	return(list(x = x, header = header, class = 'NanoString'));
+	x <- list(x = x, header = header);
+	class(x) <- 'NanoString';
+	return(x);
 	}

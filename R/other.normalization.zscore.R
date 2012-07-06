@@ -1,5 +1,5 @@
 other.normalization.zscore <- function(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA) { 
-	
+
 	genes.to.fit <- if(is.na(genes.to.fit)) "all" else genes.to.fit;
 	genes.to.predict = if(is.na(genes.to.predict)) "all" else genes.to.predict;
 
@@ -13,7 +13,7 @@ other.normalization.zscore <- function(x, anno, OtherNorm = 'none', verbose = TR
 
 	# which genes need to be fit
 	genes.to.fit = anno$Name %in% genes.to.fit | grepl(paste(genes.to.fit, collapse = "|"), anno$Code.Class, ignore.case = TRUE) ;
-	
+
 	# set values not to be fit to NA i.e. ignored
 	x.fit <- x;
 	x.fit[!genes.to.fit,] <- NA;
@@ -27,7 +27,7 @@ other.normalization.zscore <- function(x, anno, OtherNorm = 'none', verbose = TR
 		}
 
 	#### START METHOD #########################################################################
-	
+
 	x.fit[x.fit == 0] <- NA;
 
 	# z-score (standard normal) normalization
