@@ -3,8 +3,15 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 	# first convert it to a matrix
 	Probe.Correction.Factor <- as.matrix(Probe.Correction.Factor);
 
-	if ( !(all(Probe.Correction.Factor %in% c('none', 'filter', 'adjust'))) | dim(Probe.Correction.Factor)[2] == 2 ) {
-		stop("Probe.Correction: The parameter argument is not expected, see the documentation.");
+	if (all(dim(Probe.Correction.Factor) == 1)) {
+		if ( !(all(Probe.Correction.Factor %in% c('none', 'filter', 'adjust')))) {
+			stop("Probe.Correction: The parameter argument is not expected, see the documentation.");
+			}
+		}
+	if ( any(dim(Probe.Correction.Factor) > 1) ) {
+			if ( dim(Probe.Correction.Factor)[2] != 2 ) {
+				stop("Probe.Correction: The parameter argument is not expected, see the documentation.");
+			}
 		}
 
 	# new format
