@@ -1,0 +1,28 @@
+NanoStringNorm 1.1.10
+----------------------------------------------------------------
+
+MINOR FEATURES
+
+* Added colour argument `col` in Plot.NanoStringNorm to change default plotting colours
+* Added function read.markup.RCC to process single sample markup RCC files
+* Changed NanoStringNorm log argument to `take.log`
+* Added NanoStringNorm argument `is.log`.  This switches a number of error checks i.e. no error if negative values and also changes the calculation of the geometric mean.  The purpose is to allow PCR type data to be process i.e. TLDA and OpenArray
+* Added trycatch to norm.comp which returns NA if a methods fails i.e. no HK genes
+* Added rescale function to Plot.NanoStringNorm in order to bound the size of points the volcano plots
+* Added argument to choose sample column names from header rows.
+* Added argument `icc.method` in norm.comp to choose between anova (fast) and mixed (more appropriate)
+* Changed default sample name in read.xls.rcc to file.name
+
+
+BUG FIXES
+
+* Added check in NanoStringNorm to check if input is a matrix, list, or data.frame
+* Added check for `Code.Class` colum in norm.comp.  The col is referenced but the data is not exhaustively checked.  The check was also added to the read.markup.RCC function
+* Added check for problem input in read.xls.RCC
+* Fixed read.xls.RCC parsing of rows with missing values 
+* Fixed missing Lane.ID in header when using reas.xls.RCC
+* Added check for problem probe correction input
+* Added tryCatch around mixed model ICC calculations in norm.comp i.e. HK genes reduced to zero.
+* Added tryCatch around CV calculations in norm.cmop
+* Fixed plotting erros for small datasets below 12 samples
+

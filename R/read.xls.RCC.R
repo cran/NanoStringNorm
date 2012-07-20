@@ -1,4 +1,4 @@
-read.xls.RCC <- function(xls, sheet = 1, perl) {
+read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 
 	# double check gdata is loaded
 	if (!require(gdata)) {
@@ -23,7 +23,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 	cat("\n\n");
 
 	# define pattern of first line of sample names
-	pattern.first.line.header <- "File name";
+	pattern.first.line.header <- "File";
 
 	# call gdata::read.excel and load header with sample names
 	header <- gdata::read.xls(
@@ -39,26 +39,37 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 		strip.white = TRUE
 		);
 
+	if (is.null(header)) {
+		stop("READ.XLS.RCC: There appears to be a problem with RCC file.");
+		}
+
+	rownames(header) <- gsub(" $", "", rownames(header));
+	rownames(header) <- gsub(" ", ".", rownames(header));
+	rownames(header) <- tolower(rownames(header));
+
+	if (!all(c("file.name", "sample.id", "binding.density") %in% rownames(header)))  {
+		stop("READ.XLS.RCC: There appears to be a problem with RCC file.");
+		}
+
 	# parse the header
 
 	# drop missing rows
-	header <- header[-c(8,9),];
+	header <- header[-c(8),];
 	# drop missing columns
 	header <- header[,-c(1,2)];
 	# drop trailing rows
 	header <- header[1:12,]; 
 	# drop trailing colums
 	header <- header[,!is.na(header[1,]) & !is.na(header[2,])];
-
 	# get sample IDs
-	sample.ids <- header[2,];
+	sample.ids <- header[rownames(header) %in% tolower(sample.id.row),];
 
 	# change spaces to dots in sample names
 	sample.ids <- gsub(" ", ".", sample.ids);
 	sample.ids <- gsub("^([0-9])", "x\\1" ,sample.ids);  
 
 	# define pattern of first line of count data
-	pattern.first.line.counts <- "Code Class";
+	pattern.first.line.counts <- "Code";
 
 	# call gdata::read.excel and load counts
 	x <- gdata::read.xls(
@@ -71,20 +82,24 @@ read.xls.RCC <- function(xls, sheet = 1, perl) {
 		strip.white = TRUE,
 		as.is = TRUE
 		);
-	
+
+	if (is.null(x)) {
+		stop("READ.XLS.RCC: There appears to be a problem with RCC file. Likely couldnt find the count header specifically `Code Class`");
+		}
+
 	# drop any trailing columns 
 	x <- x[,1:(3+length(sample.ids))];
 
 	# drop rows that have a missing code class or gene name
 	rows.with.missing.anno <- (x[,1] == '' | x[,2] == '');
 	if (any(rows.with.missing.anno)) {
-		cat(paste("The following row(s)", paste(rows.with.missing.anno, collapse = ", "), "have been dropped due to missing annotation.\n\t  You may want to double check the excel file.\n\n"));
+		cat(paste("The following row(s)", paste(which(rows.with.missing.anno), collapse = ", "), "have been dropped due to missing annotation.\n\t  You may want to double check the excel file.\n\n"));
 		}
 
-	if (any(rows.with.missing.anno)) {	
-		x <- x[-rows.with.missing.anno,];
+	if (any(rows.with.missing.anno)) {
+		x <- x[!rows.with.missing.anno,];
 		}
-	
+
 	# add sample names
 	colnames(x) <- c(colnames(x)[1:3], sample.ids);
 

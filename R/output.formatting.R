@@ -1,12 +1,16 @@
-output.formatting <- function(x, anno, OtherNorm = 'none', round.values = FALSE, log = FALSE, verbose = TRUE) {
+output.formatting <- function(x, anno, OtherNorm = 'none', round.values = FALSE, is.log = FALSE, take.log = FALSE, verbose = TRUE) {
 
-	if ( (!is.logical(round.values) | !is.logical(log)) | is.na(round.values) | is.na(log) ) {
-		stop('Formatting: Round and Log need to be TRUE or FALSE\n\n');
+	if ( (!is.logical(round.values) | !is.logical(take.log)) | is.na(round.values) | is.na(take.log) | !is.logical(is.log) | is.na(is.log) ) {
+		stop('OUTPUT.FORMATTING: Round and take.log and is.log need to be TRUE or FALSE\n\n');
+		}
+
+	if ( is.log == TRUE & take.log == TRUE) {
+		warning("OUTPUT.FORMATTING:  Are you sure you want to take the log of logged data?  Both is.log and take.log are TRUE.");
 		}
 
 	# shouldn't be log-transforming z-scores
 	if (OtherNorm %in% c('rank.normal','zscore') & verbose == TRUE) {
-		cat('Formatting: log/rounding of zscores/rank.normal is intentionally not implemented.\n\n');
+		cat('OUTPUT.FORMATTING: log/rounding of zscores/rank.normal is intentionally not implemented.\n\n');
 		}
 	
 	# round the data to discrete values.
@@ -15,7 +19,7 @@ output.formatting <- function(x, anno, OtherNorm = 'none', round.values = FALSE,
 		}
 
 	# log2 transformation
-	if (log == TRUE & OtherNorm != 'zscore') {
+	if (take.log == TRUE & !OtherNorm %in% c('rank.normal','zscore')) {
 
 		# handle negative values
 		if (any(na.omit(x) < 1)) {

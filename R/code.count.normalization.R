@@ -1,8 +1,8 @@
-code.count.normalization <- function(x, anno, CodeCount = 'none', verbose = TRUE) {
+code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE, verbose = TRUE) {
 
 	# check if missing
 	if (is.na(CodeCount)) {
-		stop('CodeCount: CodeCount normalization method cannot be missing.  Try setting to *none*');		
+		stop('CodeCount: CodeCount normalization method cannot be missing.  Try setting to *none*');
 		}
 
 	# Code Count Normalization using sum: take sum of positive controls per sample
@@ -19,7 +19,8 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', verbose = TRUE
 		pos.sample <- apply(
 			X = x[anno$Code.Class == 'Positive',],
 			MARGIN = 2, 
-			FUN = NanoStringNorm:::get.geo.mean
+			FUN = NanoStringNorm:::get.geo.mean,
+			logged = logged
 			);
 		}
 		

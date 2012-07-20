@@ -135,7 +135,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	Background = 'mean',
 	SampleContent = 'housekeeping.sum',
 	round.values = FALSE,
-	log = FALSE,
+	take.log = FALSE,
 	return.matrix.of.endogenous.probes = TRUE
 	);
 @
@@ -155,7 +155,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	Background = 'mean.2sd',
 	SampleContent = 'housekeeping.geo.mean',
 	round.values = TRUE,
-	log = TRUE
+	take.log = TRUE
 	);
 @
 %
@@ -197,7 +197,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	Background = 'mean.2sd',
 	SampleContent = 'top.geo.mean',
 	round.values = TRUE,
-	log = TRUE,
+	take.log = TRUE,
 	traits = trait.strain
 	);
 @

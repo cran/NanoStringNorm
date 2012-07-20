@@ -10,7 +10,8 @@ Plot.NanoStringNorm(
 	genes = NA,
 	label.best.guess = TRUE,
 	label.ids = NA,
-	title = TRUE
+	title = TRUE,
+	col = NA
 	);
 
 }
@@ -22,6 +23,7 @@ Plot.NanoStringNorm(
   \item{label.best.guess}{Labels will automatically be added for samples and genes that are either outliers (~3sd from mean) or the most significant.  The default is TRUE.}
   \item{label.ids}{Explicitly label points.  To use this feature supply a list with with two elements named genes and samples.  By default this is set to NA.}
   \item{title}{Should the plot titles be included.  By default they are included but this can be turned off if generating plots for publication or presentation.}
+  \item{col}{Alternate colours for plotting.  Input should be a vector of two rgb values.  The default colours are orange and green.}
 }
 \value{
 The output is single or series of plots.  Plots focus on either genes or samples.  Due to variation in sample quality it is a good idea to review data in order to determine outliers.  Outliers could effect normalization of other samples and bias results of downstream statistical analysis.  Systematic batch effects in terms of cartridge, sample type or covariates should also be evaluated to minimize confounding results.
@@ -75,7 +77,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	Background = 'mean.2sd',
 	SampleContent = 'housekeeping.geo.mean',
 	round.values = TRUE,
-	log = TRUE,
+	take.log = TRUE,
 	traits = trait.strain,
 	return.matrix.of.endogenous.probes = FALSE
 	);

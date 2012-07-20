@@ -1,4 +1,9 @@
-NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', round.values = FALSE, log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, ...) {
+NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', round.values = FALSE, is.log = FALSE, take.log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, ...) {
+
+	# check if the data is a list, matrix, or data.frame
+	if ( !(is.list(x) | is.data.frame(x) | is.matrix(x)) ) {
+		stop("NanoStringNorm:  Check your data, it doesn't appear to be a list, matrix or data.frame.");
+		}
 
 	# get correct list item from xls or NSN output
 	if (class(x) == 'NanoString') {
@@ -15,8 +20,8 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		# check that the annotation columns exist
 		if ( colnames(x)[1] == 'CodeClass' ) colnames(x)[1] <- 'Code.Class';
 
-		if ( any(!c('Code.Class','Name', 'Accession') %in% colnames(x)) ) {
-			stop ('NanoStringNorm: You have not specified an annotation file and your data does not contain the Code.Class, Accession or Name fields.');
+		if ( any(!c('Code.Class','Name') %in% colnames(x)) ) {
+			stop ('NanoStringNorm: You have not specified an annotation file and your data does not contain the Code.Class or Name fields.');
 			}
 		if ( is.factor(x$Code.Class) | is.factor(x$Name) | is.factor(x$Accession) ) {
 			stop ('NanoStringNorm: One of the annotation columuns (Code.Class,Name, Accession) is a factor.  Please convert to a character value to avoid issues');
@@ -29,10 +34,10 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 		x.raw <- data.frame(x);
 
-		anno <- x[,c('Code.Class', 'Name', 'Accession')];
+		anno <- x[,names(x) %in% c('Code.Class', 'Name', 'Accession')];
 		x <- as.matrix(x[,!names(x) %in% c('Code.Class', 'Name', 'Accession')]);
 		rownames(x) <- anno$Name;
-	
+
 		# check for duplicate gene names
 		if ( any(duplicated(anno$Name)) & verbose == TRUE ) {
 			cat('NanoStringNorm: Note you have duplicate gene ids.  \n\tThis could cause issues in later processing or sorting.');
@@ -72,13 +77,13 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 	# start printing analysis log
 	if (verbose) {
 		cat('\n##############################\n');
-		cat(paste('### NanoStringNorm v', packageDescription('NanoStringNorm')$Version, '  ###\n', sep = ''));
+		cat(paste('### NanoStringNorm v', packageDescription('NanoStringNorm')$Version, ' ###\n', sep = ''));
 		cat('##############################\n\n');
 		cat(paste('There are', ncol(x),'samples and', sum(grepl('Endogenous', anno$Code.Class)), 'Endogenous genes \n\n')); 
 		}
 
-	# Check data for NA's
-	if (any(is.na(x))) {
+	# Check data for NA's but only if the data is unlogged i.e. counts.  prelogged pcr data could have NAs
+	if (any(is.na(x)) & is.log == FALSE) {
 		stop('NanoStringNorm: There are NA values in your data');
 		}
 	
@@ -88,7 +93,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		}
 
 	# Check data is positive
-	if (any(x < 0)) {
+	if (any(x < 0) & is.log == FALSE) {
 		stop('NanoStringNorm: There are negative values in your data');
 		}
 
@@ -141,7 +146,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do CodeCount Normalization
 	if ( CodeCount %in% c('sum', 'geo.mean') ) {
-		output.code.count.normalization <- NanoStringNorm:::code.count.normalization(x, anno, CodeCount, verbose);
+		output.code.count.normalization <- NanoStringNorm:::code.count.normalization(x, anno, CodeCount = CodeCount, logged = is.log, verbose = verbose);
 		x <- output.code.count.normalization$x;
 		pos.norm.factor <- output.code.count.normalization$pos.norm.factor;
 		pos.sample <- output.code.count.normalization$pos.sample;
@@ -150,7 +155,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do Background Correction Normalization
 	if ( Background %in% c('mean', 'mean.2sd', 'max') ) {
-		output.background.normalization <- NanoStringNorm:::background.normalization(x, anno, Background, verbose);
+		output.background.normalization <- NanoStringNorm:::background.normalization(x, anno, Background = Background, verbose = verbose);
 		x <- output.background.normalization$x;
 		background.level <- output.background.normalization$background.level;
 		rm(output.background.normalization);
@@ -158,7 +163,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do Sample Content Normalization
 	if ( SampleContent %in% c('housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean', 'top.geo.mean', 'low.cv.geo.mean') ) {
-		output.sample.content.normalization <- NanoStringNorm:::sample.content.normalization(x, anno, SampleContent, verbose);
+		output.sample.content.normalization <- NanoStringNorm:::sample.content.normalization(x, anno, SampleContent = SampleContent, logged = is.log, verbose = verbose);
 		x <- output.sample.content.normalization$x;
 		sampleContent.norm.factor <- output.sample.content.normalization$sampleContent.norm.factor;
 		rna.content <- output.sample.content.normalization$rna.content;
@@ -170,11 +175,11 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		}
 
 	# do rounding, log-transformation
-	x <- NanoStringNorm:::output.formatting(x, anno, OtherNorm, round.values, log, verbose);
+	x <- NanoStringNorm:::output.formatting(x, anno, OtherNorm = OtherNorm, round.values = round.values, is.log = is.log, take.log = take.log, verbose = verbose);
 	
 	# get predicted concentration based on positive controls
 	if (predict.conc == TRUE) { 
-		predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, log, verbose);
+		predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, is.log, take.log, verbose);
 		}
 	else {
 		predicted.concentration <- NA;
@@ -203,14 +208,14 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 	gene.summary.stats.norm <- NanoStringNorm:::get.gene.summary.stats(x, anno);
 
 	# check that trait data is the right format
-	check.traits <- NanoStringNorm:::check.trait.values(x, anno, log, traits);
+	check.traits <- NanoStringNorm:::check.trait.values(x, anno, traits = traits);
 
 	# get batch effects or trait vs normalization factor associations
-	batch.effects <- NanoStringNorm:::get.batch.effects(x, anno, log, traits, sample.summary.stats);
+	batch.effects <- NanoStringNorm:::get.batch.effects(x, anno, take.log = take.log, traits = traits, sample.summary.stats = sample.summary.stats);
 
 	# get trait summary stats
 	if (check.traits == 1) {
-		trait.summary.stats <- NanoStringNorm:::get.trait.summary.stats(x, anno, log, traits);
+		trait.summary.stats <- NanoStringNorm:::get.trait.summary.stats(x, anno, logged = (is.log | take.log), traits = traits);
 
 		# add the trait summary statistics to the gene summary stats
 		gene.summary.stats.norm <- cbind(
@@ -221,7 +226,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# add the normalization details to a list
 	x = list(
-		normalized.data = data.frame(anno,x),
+		normalized.data = data.frame(anno,x, row.names = anno$Name),
 		raw.data = x.raw,
 		normalization.workflow = c(
 			CodeCount = CodeCount,
@@ -229,7 +234,8 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 			SampleContent = SampleContent,
 			OtherNorm = OtherNorm,
 			round = round.values,
-			log = log
+			is.log = is.log,
+			take.log = take.log
 			),
 		sample.summary.stats.norm = sample.summary.stats,
 		gene.summary.stats.norm = as.data.frame(gene.summary.stats.norm),

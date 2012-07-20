@@ -1,4 +1,4 @@
-norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE) { 
+norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE, icc.method = "mixed") { 
 
 	if (!require("lme4")) {
 		stop("norm.comp: lme4 is required");
@@ -13,7 +13,9 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 		x <- x$normalized.data;
 		}
 
-	# if
+	if (colnames(x)[1] == "CodeClass") colnames(x)[1] = "Code.Class";
+
+	# set the replicates to be the sample names if missing
 	if (is.null(replicates)) {
 		replicates <- colnames(x[!colnames(x) %in% c("Name", "Code.Class", "Accession")]);
 		}
@@ -62,28 +64,59 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 		actual.replicates <- is.duplicated(replicates);
 		
 		# check missing, no groups left, only one group
-		if(all(is.na(x))) return(NA);
-		if(!anyDuplicated(replicates[actual.replicates & !is.na(x)])) return(NA);
-		if(nlevels(as.factor(replicates[actual.replicates & !is.na(x)])) == 1) return(NA);
-		
-		if(method == "anova") {
+		if (all(is.na(x))) return(NA);
+		if (!anyDuplicated(replicates[actual.replicates & !is.na(x)])) return(NA);
+		if (nlevels(as.factor(replicates[actual.replicates & !is.na(x)])) == 1) return(NA);
+
+		# see package multilvel 
+		if (method == "anova") {
 			anova.data <- data.frame(x = x[actual.replicates], replicates = replicates[actual.replicates]);
 			anova.fit <- summary(aov(x ~ as.factor(replicates), data = anova.data));
-			s2_between <- anova.fit[[1]][1,3];
-			s2_within  <- anova.fit[[1]][2,3];
+			ms_between <- anova.fit[[1]][1,3];
+			ms_within  <- anova.fit[[1]][2,3];
 			group.size <- (anova.fit[[1]][2,1] + (anova.fit[[1]][1,1] + 1))/(anova.fit[[1]][1,1] + 1);
-			icc <- (s2_between - s2_within)/(s2_between + ((group.size - 1) * s2_within));
+			icc <- (ms_between - ms_within)/(ms_between + ((group.size - 1) * ms_within));
 			#icc <- anova.fit[1,3]/(anova.fit[1,3]+anova.fit[2,3]);
+
+			# low df models sometimes have problems 
+			# returning negative variances
+			# just drop these
+			#if(is.na(icc)) browser()
+			if (icc <= 0 | (ms_between - ms_within) == 0) {
+				icc <- NA;
+				}
+
 			}
-		if(method == "mixed") {
-			mixed.fit <- lmer(x ~ 1|replicates);
-			s2_between <- as.numeric(VarCorr(mixed.fit)$replicates[1,1]);
-			s2_within <- as.numeric(attr(VarCorr(mixed.fit), "sc"))^2;
-			icc <- s2_between/(s2_between + s2_within);
+		if (method == "mixed") {
+			#expr = lme(x ~ random = ~ 1|replicates)
+			mixed.fit <- tryCatch(
+				expr = lmer(x ~ 1|replicates),
+				error = function(e) { return ( c(NULL)); }
+				);
+
+			if (is.null(mixed.fit)) {
+				icc <- NA;
+				}
+			else {
+				s2_between <- as.numeric(VarCorr(mixed.fit)$replicates[1,1]);
+				s2_within <- as.numeric(attr(VarCorr(mixed.fit), "sc"))^2;
+				icc <- s2_between/(s2_between + s2_within);
+				}
+
+			# low df models sometimes have problems 
+			# returning negative variances which get rounded to zero
+			# just drop these
+			if (icc == 0) {
+				icc <- NA;
+				}
 			}
+
 		return(icc);
 		}
 
+	get.accuracy <- function(x, group, n.reps) {
+		# split the data to get accuracy
+		}
 
 	# function to find duplicate *pairs* as logical vectors
 	is.duplicated <- function(x) {
@@ -105,90 +138,130 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 						print(paste(CodeCount.method, Background.method, SampleContent.method, OtherNorm.method, sep="_"));
 						}
 
-					# normalize
-					data.nsn <- NanoStringNorm(
-						x = x,
-						CodeCount = CodeCount.method,
-						Background = Background.method,
-						SampleContent = SampleContent.method,
-						OtherNorm = OtherNorm.method,
-						log = TRUE,
-						verbose = FALSE,
-						return.matrix.of.endogenous.probes = FALSE
-						);
+					# normalize wrapped in tryCatch to avoid truncating output if step fails
+					data.nsn <- tryCatch(
+						expr = NanoStringNorm(
+							x = x,
+							CodeCount = CodeCount.method,
+							Background = Background.method,
+							SampleContent = SampleContent.method,
+							OtherNorm = OtherNorm.method,
+							take.log = TRUE,
+							verbose = FALSE,
+							return.matrix.of.endogenous.probes = FALSE
+							),
+						error = function(e) {return(NA)}
+						)
 
-					#data.nsn <- data.nsn[[1]][grepl("[Ee]ndogenous", data.nsn[[1]]$Code.Class),-c(1:3)];
-					data.nsn <- data.nsn[[1]][,-c(1:3)];
+					if(!all(is.na(data.nsn))) {
+						#data.nsn <- data.nsn[[1]][grepl("[Ee]ndogenous", data.nsn[[1]]$Code.Class),-c(1:3)];
+						data.nsn <- data.nsn[[1]][,-c(1:3)];
 
-					if (OtherNorm.method %in% c("rank.normal","zscore")) {
-						# calc missing
-						missing.pc <- apply(data.nsn, 1, function(x) sum(is.na(x))/length(x));
-						}
-					else {
-						# calc missing
-						missing.pc <- apply(data.nsn, 1, function(x) sum(x==0)/length(x));
-						# set missing to NA
-						data.nsn[data.nsn == 0] <- NA;
-						}
+						if (OtherNorm.method %in% c("rank.normal","zscore")) {
+							# calc missing
+							missing.pc <- apply(data.nsn, 1, function(x) sum(is.na(x))/length(x));
+							}
+						else {
+							# calc missing
+							missing.pc <- apply(data.nsn, 1, function(x) sum(x==0)/length(x));
+							# set missing to NA
+							data.nsn[data.nsn == 0] <- NA;
+							}
 
-					# remove genes with lots of missing
-					missing.gt90pc <- missing.pc > .90;
+						# remove genes with lots of missing
+						missing.gt90pc <- missing.pc > .90;
 
-					if (any(missing.gt90pc)) {
-						data.nsn[missing.gt90pc,] <- NA;
-						}
-					
-					# calculate mean cv for pos, hk, end
-					cv <- apply(
-						X = data.nsn,
-						MARGIN = 1,
-						FUN = get.cv
-						);
-					
-					# output pos, hk, eng cv change
-					cv.pos <- mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)", "POS_D(2)")], na.rm = TRUE);
-					cv.hk <- mean(cv[x$Code.Class %in% c("Control", "Housekeeping")], na.rm = TRUE);
-					cv.end <- mean(cv[grepl("End", x$Code.Class)], na.rm = TRUE);
+						if (any(missing.gt90pc)) {
+							data.nsn[missing.gt90pc,] <- NA;
+							}
 
-					# only try icc if more than 1 group	
-					if (nlevels(as.factor(replicates[is.duplicated(replicates)])) > 1) {
-
-						# fit model with and compare residual error
-						icc.anova <- apply(
-							X = data.nsn[grepl("[Ee]ndogenous", x$Code.Class),],
+						# calculate mean cv for pos, hk, end
+						cv <- apply(
+							X = data.nsn,
 							MARGIN = 1,
-							FUN = get.icc,
-							replicates = replicates,
-							method = "anova"
+							FUN = get.cv
 							);
 
-						icc.anova <- median(icc.anova, na.rm = TRUE);
-
-						icc.mixed <- apply(
-							X = data.nsn[grepl("[Ee]ndogenous", x$Code.Class),],
+						is.90pc.missing <- apply(
+							X = data.nsn,
 							MARGIN = 1,
-							FUN = get.icc,
-							replicates = replicates,
-							method = "mixed"
+							FUN = function(x) sum(is.na(x)) >= round((0.9 * length(x)),0)
 							);
 
-						icc.mixed <- median(icc.mixed, na.rm = TRUE);
+						cv.pos <- tryCatch(
+							expr = mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)", "POS_D(2)")], na.rm = TRUE),
+							error = function(e) { return ( c(NA)); }
+							);
 
-#						corr.group <- NA;
-#						cv.group <- NA;
+						cv.hk <- tryCatch(
+							expr = mean(cv[x$Code.Class %in% c("Control", "Housekeeping")], na.rm = TRUE),
+							error = function(e) { return ( c(NA)); }
+							);
+
+						cv.end <- tryCatch(
+							expr = mean(cv[grepl("[Ee]ndogenous", x$Code.Class) & !is.90pc.missing], na.rm = TRUE),
+							error = function(e) { return ( c(NA)); }
+							);
+
+						# only try icc if more than 1 group	
+						if (nlevels(as.factor(replicates[is.duplicated(replicates)])) > 1) {
+
+							icc.anova <- NA;
+							icc.mixed <- NA;
+
+							if (any(grepl("anova", icc.method))) {
+								# fit model with and compare residual error
+								icc.anova <- apply(
+									X = data.nsn[grepl("[Ee]ndogenous", x$Code.Class),],
+									MARGIN = 1,
+									FUN = get.icc,
+									replicates = replicates,
+									method = "anova"
+									);
+
+								icc.anova <- median(icc.anova, na.rm = TRUE);
+							}
+
+							if (any(grepl("mixed", icc.method))) {
+								icc.mixed <- apply(
+									X = data.nsn[grepl("[Ee]ndogenous", x$Code.Class),],
+									MARGIN = 1,
+									FUN = get.icc,
+									replicates = replicates,
+									method = "mixed"
+									);
+
+								icc.mixed <- median(icc.mixed, na.rm = TRUE);
+
+								#x.long <- matrix(as.vector(as.matrix(data.nsn[grepl("[Ee]ndogenous", x$Code.Class),])),ncol = 1);
+								#rep.log <- rep(replicates, each = nrow(data.nsn[grepl("[Ee]ndogenous", x$Code.Class),]));
+
+								#icc.mixed(x.long, rep.long, "mixed")
+							}
+
+	#						corr.group <- NA;
+	#						cv.group <- NA;
+							}
+						else {
+
+	#						corr.group <- get.mean.corr(data.nsn[,is.duplicated(replicates)], ignore.pc = .1);
+
+	#						cv.group <- apply(
+	#							X = data.nsn[,is.duplicated(replicates)],
+	#							MARGIN = 1,
+	#							FUN = get.cv
+	#							);
+
+	#						cv.group <- mean(cv.group, na.rm = TRUE); 
+
+							icc.anova <- NA;
+							icc.mixed <- NA;
+							}
 						}
 					else {
-
-#						corr.group <- get.mean.corr(data.nsn[,is.duplicated(replicates)], ignore.pc = .1);
-
-#						cv.group <- apply(
-#							X = data.nsn[,is.duplicated(replicates)],
-#							MARGIN = 1,
-#							FUN = get.cv
-#							);
-
-#						cv.group <- mean(cv.group, na.rm = TRUE); 
-
+						cv.pos <- NA;
+						cv.hk <- NA;
+						cv.end <- NA;
 						icc.anova <- NA;
 						icc.mixed <- NA;
 						}
@@ -221,6 +294,7 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 		cv.pos.results = cv.pos.results,
 		cv.hk.results = cv.hk.results,
 		cv.end.results = cv.end.results,
+		cv.bio2tech.ratio = round(cv.end.results/cv.pos.results,2),
 		#corr.group.results = corr.group.results,
 		#cv.group.results = cv.group.results,
 		icc.anova.results = icc.anova.results,

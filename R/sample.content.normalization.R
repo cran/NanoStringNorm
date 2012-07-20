@@ -1,4 +1,4 @@
-sample.content.normalization <- function(x, anno, SampleContent = 'none', verbose = TRUE) {
+sample.content.normalization <- function(x, anno, SampleContent = 'none', logged = FALSE, verbose = TRUE) {
 
 	# check if missing
 	if (is.na(SampleContent)) {
@@ -26,7 +26,8 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 			rna.content <- apply(
 				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'), ], 
 				MARGIN = 2, 
-				FUN = NanoStringNorm:::get.geo.mean
+				FUN = NanoStringNorm:::get.geo.mean,
+				logged = logged
 				);
 			}
 
@@ -54,7 +55,8 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 			rna.content <- apply(
 				X = x[low.cv.genes,],
 				MARGIN = 2, 
-				FUN = NanoStringNorm:::get.geo.mean
+				FUN = NanoStringNorm:::get.geo.mean,
+				logged = logged
 				);
 			}
 
@@ -93,7 +95,8 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', verbos
 			rna.content <- apply(
 				X = x[endogenous.genes,][rank.rna <= 75,],
 				MARGIN = 2,
-				FUN = NanoStringNorm:::get.geo.mean
+				FUN = NanoStringNorm:::get.geo.mean,
+				logged = logged
 				);
 			}
 

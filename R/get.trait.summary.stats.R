@@ -1,4 +1,4 @@
-get.trait.summary.stats <- function(x, anno = NA, log, traits) {
+get.trait.summary.stats <- function(x, anno = NA, logged, traits) {
 
 	# attempt to convert traits into a matrix
 	traits <- as.matrix(traits);
@@ -18,7 +18,7 @@ get.trait.summary.stats <- function(x, anno = NA, log, traits) {
 			FUN = NanoStringNorm:::get.ttest.and.foldchange,
 			group1 = (trait.value == 1),
 			group2 = (trait.value == 2),
-			log = log
+			logged = logged
 			);
 
 		# add the results to a matrix

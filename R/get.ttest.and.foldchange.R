@@ -1,4 +1,4 @@
-get.ttest.and.foldchange <- function(x, group1, group2, log = TRUE) {
+get.ttest.and.foldchange <- function(x, group1, group2, logged = FALSE) {
 	group1[is.na(group1)] <- FALSE;
 	group2[is.na(group2)] <- FALSE;
 	
@@ -11,7 +11,7 @@ get.ttest.and.foldchange <- function(x, group1, group2, log = TRUE) {
 				var.equal = FALSE,
 				alternative = 'two.sided'
 				)$p.value,
-			if (log == TRUE) { round(mean(x[group2], na.rm = TRUE) - mean(x[group1], na.rm = TRUE),1); } else { round(mean(x[group2], na.rm = TRUE) / mean(x[group1], na.rm = TRUE),1); }
+			if (logged == TRUE) { round(mean(x[group2], na.rm = TRUE) - mean(x[group1], na.rm = TRUE),1); } else { round(mean(x[group2], na.rm = TRUE) / mean(x[group1], na.rm = TRUE),1); }
 			),
 		 error = function(e) { return ( c(NA, NA)); }
 		 );

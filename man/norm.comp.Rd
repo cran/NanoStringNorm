@@ -5,7 +5,7 @@
 \usage{
 norm.comp(x, anno, replicates = NULL, CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), 
 SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'),
-OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE)
+OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE, icc.method = "mixed")
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an Excel spreadsheet.  If anno is NA then the first three columns must be \emph{c('Code.Class', 'Name', 'Accession')} and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}
@@ -17,6 +17,7 @@ OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histog
   \item{OtherNorm.methods}{vector of methods to compare}
   \item{histogram}{logical if histogram is to be output}
   \item{verbose}{logical if logging should be output}
+  \item{icc.method}{if replicates are included then the intra-class correlation can be calculated via mixed models or anova.  Anova is fast but not appropriate in unbalanced situations.}
 }
 \details{
 A data.frame is returned with a single row for each combination of methods.  For each method the coefficient of variation is reported for positive controls, housekeeping and endogenous genes.  If replicates are included then intra-class correlation (ICC) values are reported.  One would expect that minimizing variation in controls and replicates is a reasonable estimate of normalization performance.  Ideally, this should be performed on a pilot study.  Future extensions will include comparing methods via cross validation on trait differences in order to maximize information content.

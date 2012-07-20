@@ -1,4 +1,4 @@
-get.batch.effects <- function(x, anno = NA, log, traits, sample.summary.stats) {
+get.batch.effects <- function(x, anno = NA, take.log, traits, sample.summary.stats) {
 
 	# convert the traits to matrix
 	traits <- as.matrix(traits);
@@ -10,7 +10,7 @@ get.batch.effects <- function(x, anno = NA, log, traits, sample.summary.stats) {
 	# create a design matrix that has dummy traits for each cartridge vs the rest.  do not create if there is already a supplied cartridge variable
 	if ( all(!grepl('[Cc]artridge', colnames(traits))) & cartridge.max > 1 ) {
 
-		# create a matrix a dummy matrix to hold the values
+		# create dummy matrix to hold the values
 		cartridge.id <- rep(1:cartridge.max, each = 12)[1:ncol(x)];
 		cartridge.design.matrix <- matrix(
 			data = 1, 

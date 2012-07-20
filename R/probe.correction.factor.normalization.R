@@ -4,7 +4,7 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 	Probe.Correction.Factor <- as.matrix(Probe.Correction.Factor);
 
 	if (all(dim(Probe.Correction.Factor) == 1)) {
-		if ( !(all(Probe.Correction.Factor %in% c('none', 'filter', 'adjust')))) {
+		if ( !(Probe.Correction.Factor[1] %in% c('none', 'filter', 'adjust'))) {
 			stop("Probe.Correction: The parameter argument is not expected, see the documentation.");
 			}
 		}
@@ -15,7 +15,7 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 		}
 
 	# new format
-	if (Probe.Correction.Factor == "adjust" & sum(grepl("|", anno$Name, fixed = TRUE)) > 10) {
+	if (Probe.Correction.Factor[1] == "adjust" & sum(grepl("|", anno$Name, fixed = TRUE)) > 10) {
 		#parsed.names <- matrix(unlist(strsplit(anno$Name, split = "|", fixed = TRUE)), ncol = 2, byrow = TRUE);
 		#correction <- gsub("\\|.+$", "", anno$Name);
 		#anno$Name <- gsub("\\|.+$", "", anno$Name);
@@ -37,14 +37,14 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 		rcc.format <- "old";
 
 		# reset the method to none if adjust
-		if (Probe.Correction.Factor == 'adjust') {
+		if (Probe.Correction.Factor[1] == 'adjust') {
 			Probe.Correction.Factor <- 'none';
 			}
 
 		}
 
 	# check for flags indicating required probe level background correction (old format)
-	if ( any(grepl('Message', anno$Name, fixed = TRUE)) & all(Probe.Correction.Factor %in% c('adjust','none')) ) {
+	if ( any(grepl('Message', anno$Name, fixed = TRUE)) & Probe.Correction.Factor[1] %in% c('adjust','none') ) {
 		if (verbose) {
 			cat('Genes requiring probe level correction:\n\n');
 			print(as.character(anno[grepl('Message', anno$Name), 'Name']));
@@ -54,7 +54,7 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 		}
 
 	# filter genes with probe level warnings.  This is useful if there is no file for probe correction.
-	if ( all(Probe.Correction.Factor == 'filter') ) {
+	if ( all(Probe.Correction.Factor[1] == 'filter') ) {
 		if (verbose) {
 			cat('You are removing the following probes from all further analysis:\n\n');
 			if (rcc.format == "old") {
@@ -74,7 +74,7 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 
 	# return results if no probe correction
 #	if ( all(Probe.Correction.Factor == 'none') | all(Probe.Correction.Factor == 'filter') | length(Probe.Correction.Factor) == 1 ) {
-	if ( all(Probe.Correction.Factor == 'none') | all(Probe.Correction.Factor == 'filter') ) {
+	if ( all(Probe.Correction.Factor[1] == 'none' | Probe.Correction.Factor[1] == 'filter') )  {
 		return(
 			list(
 				x = x,

@@ -67,7 +67,7 @@
          Background = 'mean.2sd',
          SampleContent = 'housekeeping.geo.mean',
          round.values = TRUE,
-         log = TRUE,
+         take.log = TRUE,
          traits = trait.strain,
          return.matrix.of.endogenous.probes = FALSE
          );

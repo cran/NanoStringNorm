@@ -1,6 +1,6 @@
 get.beta.se.and.p <- function(x, variable) {
 	tryCatch(
-		expr = c(	
+		expr = c(
 			coef(summary(
 				lm(variable ~ x)
 				))[2,c(1,2,4)]

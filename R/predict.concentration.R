@@ -1,7 +1,7 @@
-predict.concentration <- function(x, anno, log, verbose = TRUE) {
+predict.concentration <- function(x, anno, is.log, take.log, verbose = TRUE) {
 
 	# concentration in fM
-	if ( log == TRUE ) { 
+	if ( take.log == TRUE | is.log == TRUE) { 
 		positive.controls.concentration <- c(.125, .5, 2, 8, 32, 128);
 		}
 	else {

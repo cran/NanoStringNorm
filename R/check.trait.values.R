@@ -1,7 +1,17 @@
-check.trait.values <- function(x, anno = NA, log, traits = NA) {
+check.trait.values <- function(x, anno = NA, traits = NA) {
+
+	# check if NA
+	if (all(is.na(traits))) {
+		return(FALSE);
+		}
 
 	# attempt to convert traits into a matrix
 	traits <- as.matrix(traits);
+
+	# if a vector add a dummy colname
+	if ( is.null(colnames(traits)) ) {
+		colnames(traits) <- paste('trait', 1:ncol(traits), sep = '');
+		}
 
 	# initialize variables
 	check.na <- check.values <- check.samples <- NA;

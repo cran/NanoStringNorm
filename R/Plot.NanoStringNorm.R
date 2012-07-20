@@ -1,4 +1,4 @@
-Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE) {
+Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE, col = NA) {
 
 	# check that the object being plotted is the right class
 	if ( class(x) != 'NanoStringNorm' ) { stop('In order to plot the input object needs to be of class NanoStringNorm.  Try changing return.matrix.of.endogenous.probe to FALSE.'); }
@@ -11,12 +11,17 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 	# replace plot type all 
 	if ('all' %in% plot.type) { plot.type <- c('mean.sd', 'cv', 'norm.factors', 'missing', 'volcano','batch.effects','RNA.estimates','positive.controls'); }
 
-	# setup default plotting parameters
-	ns.green.rgb  <- rgb(193, 215, 46, maxColorValue = 255); # original
-	ns.orange.rgb <- rgb(228, 108, 11, maxColorValue = 255);
-	
-	ns.green.rgb  <- rgb(193, 215, 66, maxColorValue = 255); # better greyscale 
-	ns.orange.rgb <- rgb(228, 108, 0, maxColorValue = 255);
+	if (all(is.na(col)) | length(col) != 2 ) {
+		# setup default plotting parameters
+	#	ns.green.rgb  <- rgb(193, 215, 46, maxColorValue = 255); # original
+	#	ns.orange.rgb <- rgb(228, 108, 11, maxColorValue = 255);
+
+		ns.green.rgb  <- rgb(193, 215, 66, maxColorValue = 255); # better greyscale 
+		ns.orange.rgb <- rgb(228, 108, 0, maxColorValue = 255);
+
+		col[1] <- ns.green.rgb;
+		col[2] <- ns.orange.rgb;
+		}
 
 	op.default <- par(cex = 1, cex.lab = 1.5, cex.axis = 1, cex.main = 1.5, las = 1, pch = 20, col.lab = 'grey30', col.axis = 'grey30', col.main = 'grey30', mar = c(5.1,5.1,4.1,2.1));
 
@@ -37,14 +42,14 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			main = if (title == TRUE) 'Gene: Mean vs Standard Deviation' else NA,
 			xlim = c(0,max(x$gene.summary.stats.norm$Mean)),
 			ylim = c(0,max(x$gene.summary.stats.norm$SD)),
-			col = ns.green.rgb,
+			col = col[1],
 			);
 
 		# add the data points
 		points(
 			x = x$gene.summary.stats.norm[!grepl('Endogenous', x$normalized.data$Code.Class),'Mean'],
 			y = x$gene.summary.stats.norm[!grepl('Endogenous', x$normalized.data$Code.Class),'SD'],
-			col = ns.orange.rgb
+			col = col[2]
 			);
 
 		# add the lowess best fit line
@@ -56,7 +61,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		legend(
 			x = 'topright',
 			legend = c('Endogenous', 'Controls'),
-			col = c(ns.green.rgb, ns.orange.rgb),
+			col = c(col[1], col[2]),
 			text.col = 'grey30',
 			lwd = 4,
 			bty = 'n'
@@ -139,8 +144,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			);
 
 		# add density the lines
-		lines(density.raw, lwd = 4, col = ns.green.rgb); 
-		lines(density.norm, lwd = 4, col = ns.orange.rgb); 
+		lines(density.raw, lwd = 4, col = col[1]); 
+		lines(density.norm, lwd = 4, col = col[2]); 
 		box(col = 'grey60', lwd = 3);
 
 		# add the legend
@@ -161,7 +166,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		legend(
 			x = 'topright',
 			legend = c('Before Normalization', 'After Normalization'),
-			col = c(ns.green.rgb, ns.orange.rgb),
+			col = c(col[1], col[2]),
 			text.col = 'grey30',
 			lwd = 4,
 			bty = 'n'
@@ -173,14 +178,13 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 	#########################################################################################################
 
 	if ('volcano' %in% plot.type & ncol(x$gene.summary.stats.norm) > 4) {
-
+browser()
 		# get the trait names
 		trait.names <- gsub(
 			pattern = 'FC_',
 			replacement = '',
 			x = colnames(x$gene.summary.stats.norm)[grepl('FC_', colnames(x$gene.summary.stats.norm))]
 			);
-
 
 		# loop over each trait and create a separate plot
 		for (i in 1:length(trait.names)) {
@@ -192,8 +196,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			trait.fc <- x$gene.summary.stats.norm[,paste('FC_', trait.name, sep = '')];
 
 			# define the point color depending on magnitude of foldchange
-			trait.col <- rep(ns.green.rgb,length(trait.p));
-			trait.col[abs(trait.fc) > 2] <- ns.orange.rgb;
+			trait.col <- rep(col[1], length(trait.p));
+			trait.col[abs(trait.fc) > 2] <- col[2];
 
 			# what is the adjusted alpha for plotting a threshold line
 			bonferroni.alpha <- -log10(0.05/nrow(x$gene.summary.stats.norm));
@@ -224,9 +228,13 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 				trait.ylim <- 1.8;
 				}
 
+			scale.data <- function(x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
+	(x - from[1])/diff(from) * diff(to) + to[1];
+	}
+
 			# size the points according to mean and sig and foldchange
 			trait.cex <- rep(.5,length(trait.p));
-			trait.cex[(trait.p > 2 | abs(trait.fc) > 2) & !is.na(trait.p)] <- 1 + x$gene.summary.stats.norm[(trait.p > 2 | abs(trait.fc) > 2) & !is.na(trait.p), 'Mean']/7;
+			trait.cex[(trait.p > 1.3 | abs(trait.fc) > 2) & !is.na(trait.p)] <- 1 + scale.data(x$gene.summary.stats.norm[(trait.p > 1.3 | abs(trait.fc) > 2) & !is.na(trait.p), 'Mean'], c(0,2));
 
 			# group counts
 			n1 <- sum(x$traits[,trait.name]==1,na.rm = TRUE);
@@ -319,7 +327,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			main = if (title == TRUE) 'Sample: Missing' else NA,
 			ylim = c(0, 1),
 			xlim = c(0, max(raw.sample.Mean, na.rm = TRUE)),
-			col = ns.green.rgb
+			col = col[1]
 			);
 		
 		if (no.missing == FALSE) {
@@ -396,7 +404,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 	if ('RNA.estimates' %in% plot.type) {
 
 	if (!any(grepl('[Hh]ousekeeping',x$raw.data$Code.Class))) {
-		print("Plot.NanoStringNorm: No housekeeping genes so RNA.estimates plot is skipped");
+		cat("Plot.NanoStringNorm: No housekeeping genes so RNA.estimates plot is skipped\n");
 		}
 	else {
 		
@@ -421,7 +429,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			ylab = '',
 			#ylab = 'Housekeeping Genes in Raw Data',
 			main = if (title == TRUE) 'Sample: RNA Content Estimates' else NA,
-			col = ns.green.rgb
+			col = col[1]
 			)
 
 		title(ylab = 'Housekeeping Genes in Raw Data', line = 3.5);
@@ -473,166 +481,120 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 
 	#if ('batch.effects' %in% plot.type & dim(x$batch.effects)[1]>6) {
 	if ('batch.effects' %in% plot.type) {
-		trait.names <- unique(x$batch.effects$trait.name);
-		n.traits <- length(trait.names);
-		
-		sample.statistics <- c('Mean','SD','Missing');
-		if (x$normalization.workflow['CodeCount'] != 'none' ) {
-			sample.statistics <- c(sample.statistics,'PositiveControls');
-			}
-		if (x$normalization.workflow['Background'] != 'none' ) {
-			sample.statistics <- c(sample.statistics,'NegativeControls');
-			}
-		if (x$normalization.workflow['SampleContent'] != 'none' ) {
-			sample.statistics <- c(sample.statistics,'RNA Content');
-			}
-		
-		if (length(trait.names) > 10) {
-			op.batch.effects <- par(mfcol = c(3,1), mar=c(2,1,2,0), oma = c(6,5,5,1));
+		if (all(is.na(x$batch.effects))) {
+			cat("Plot.NanoStringNorm: no traits or plates for batch effects.  skipping plot.\n");
 			}
 		else {
-			op.batch.effects <- par(mfcol = c(3,2), mar=c(2,1,2,2), oma = c(6,5,5,1));
-			}
 
-		for (sample.statistic in sample.statistics) {
-			batch.data <- x$batch.effects[x$batch.effects$sample.statistics %in% sample.statistic,];
-			batch.col <- rep(ns.orange.rgb, n.traits);
-			batch.col[batch.data$p.ttest < 0.05] <- ns.green.rgb;
-
-			batch.cex <- -log10(batch.data$p.ttest);
-			batch.cex[batch.data$p.ttest > 0.05] <- 1;
-			#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
-			#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
+			trait.names <- unique(x$batch.effects$trait.name);
+			n.traits <- length(trait.names);
 			
-			batch.diff <- batch.data$mean.grp2 - batch.data$mean.grp1;
-			
-			plot(
-				x = 1:n.traits,
-				y = batch.diff,
-				cex = batch.cex,
-				col = batch.col,
-				xlab = sample.statistic,
-				ylim = c(-max(abs(batch.diff)),max(abs(batch.diff))),
-				main = if (title == TRUE) sample.statistic else NA,
-				xaxt = 'n'
-				);
-
-			axis(1, at = 1:n.traits, labels = NA, col.axis = 'grey30');
+			sample.statistics <- c('Mean','SD','Missing');
+			if (x$normalization.workflow['CodeCount'] != 'none' ) {
+				sample.statistics <- c(sample.statistics,'PositiveControls');
+				}
+			if (x$normalization.workflow['Background'] != 'none' ) {
+				sample.statistics <- c(sample.statistics,'NegativeControls');
+				}
+			if (x$normalization.workflow['SampleContent'] != 'none' ) {
+				sample.statistics <- c(sample.statistics,'RNA Content');
+				}
 			
 			if (length(trait.names) > 10) {
-				if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
-					if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
-					mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
-					mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2, las = 0);
-					axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
-					}
+				op.batch.effects <- par(mfcol = c(3,1), mar=c(2,1,2,0), oma = c(6,5,5,1));
 				}
-			else{
-				if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
-					axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
-					}
-				if (sample.statistic == 'Missing') {
-					if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
-					mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
-					mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2, las = 0);
-					}
+			else {
+				op.batch.effects <- par(mfcol = c(3,2), mar=c(2,1,2,2), oma = c(6,5,5,1));
 				}
 
-			abline(h = 0, lwd = 2, lty =  1, col = 'grey30');
-			box(col = 'grey60', lwd = 3);
+			for (sample.statistic in sample.statistics) {
+				batch.data <- x$batch.effects[x$batch.effects$sample.statistics %in% sample.statistic,];
+				batch.col <- rep(col[2], n.traits);
+				batch.col[batch.data$p.ttest < 0.05] <- col[1];
 
+				batch.cex <- -log10(batch.data$p.ttest);
+				batch.cex[batch.data$p.ttest > 0.05] <- 1;
+				#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
+				#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
+
+				batch.diff <- batch.data$mean.grp2 - batch.data$mean.grp1;
+
+				plot(
+					x = 1:n.traits,
+					y = batch.diff,
+					cex = batch.cex,
+					col = batch.col,
+					xlab = sample.statistic,
+					ylim = c(-max(abs(batch.diff)),max(abs(batch.diff))),
+					main = if (title == TRUE) sample.statistic else NA,
+					xaxt = 'n'
+					);
+
+				axis(1, at = 1:n.traits, labels = NA, col.axis = 'grey30');
+				
+				if (length(trait.names) > 10) {
+					if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
+						if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
+						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
+						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2.2, las = 0);
+						axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
+						}
+					}
+				else{
+					if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
+						axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
+						}
+					if (sample.statistic == 'Missing') {
+						if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
+						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
+						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2, las = 0);
+						}
+					}
+
+				abline(h = 0, lwd = 2, lty =  1, col = 'grey30');
+				box(col = 'grey60', lwd = 3);
+
+				}
+			par(op.batch.effects);
 			}
-		par(op.batch.effects);
 		}
+	
+	######################################
+	### sample. plot the raw controls  ###
+	######################################
 
-	##############################################
-	### sample. plot the normalization factors ###
-	##############################################
-
-	if ('norm.factors' %in% plot.type) {
+	if ('raw.controls' %in% plot.type) {
 
 		# setup the plotting environment
 		op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
 
-		# for simplicity add collate all the relevent data into a new object
-		normalization.factors.to.plot <- data.frame(
-			positiveControls = if (x$normalization.workflow['CodeCount'] != 'none') x$sample.summary.stats.norm$pos.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)), 
-			negativeControls = if (x$normalization.workflow['Background'] != 'none') (mean(x$sample.summary.stats.norm$background.level) / x$sample.summary.stats.norm$background.level) else rep(1,nrow(x$sample.summary.stats.norm)), 
-			sampleContent = if (x$normalization.workflow['SampleContent'] != 'none') x$sample.summary.stats.norm$sampleContent.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)),
-			row.names = rownames(x$sample.summary.stats.norm)
-			);
-
-		normalization.factors.to.plot <- as.matrix(normalization.factors.to.plot);
-		#colnames(normalization.factors.to.plot) <- c('positiveControls', 'negativeControls','sampleContent');
-		#rownames(normalization.factors.to.plot) <- rownames(x$sample.summary.stats.norm);
-
-		# first convert normalizaton factors to percentages above and below mean.  remember a high NF reflects a low value.
-		normalization.factors.to.plot.scaled <- normalization.factors.to.plot;
-		normalization.factors.to.plot.scaled[normalization.factors.to.plot >= 1] <- 100 * (normalization.factors.to.plot[normalization.factors.to.plot >= 1] - 1);
-		normalization.factors.to.plot.scaled[normalization.factors.to.plot < 1 ] <- -100 * (1/(normalization.factors.to.plot[normalization.factors.to.plot < 1]) - 1) ;
-
 		# how many plots are needed
-		n.plots <- ceiling(nrow(normalization.factors.to.plot)/48);
-		
-		# loop over each set of 48 samples
+		n.plots <- ceiling(nrow(x$raw.data)/24);
+
+		codeClasses <- c("Positive", "Negative", "Housekeeping", "Endogenous");
+
+		# loop over codeclass
+		for (codeClass in codeClasses) {
+
+		# loop over each set of 24 samples
 		for (n.plot in 1:n.plots) {
 
-			# get the start and stop rows for plotting in bins of 48 samples.  special exception for the last bin.
-			first.sample.to.plot <- (n.plot - 1) * 48 + 1; 
-			last.sample.to.plot  <- first.sample.to.plot + 47;
-			if (n.plot == n.plots) last.sample.to.plot <- nrow(normalization.factors.to.plot.scaled); 
+			# get the start and stop rows for plotting in bins of 24 samples.  special exception for the last bin.
+			first.sample.to.plot <- (n.plot - 1) * 24 + 1; 
+			last.sample.to.plot  <- first.sample.to.plot + 24;
+			if (n.plot == n.plots) last.sample.to.plot <- ncol(x$raw.data); 
 
 			# which samples are to be plotted
-			samples.to.plot <- rep(FALSE, nrow(normalization.factors.to.plot.scaled));
+			samples.to.plot <- rep(FALSE, ncol(x$raw.data));
 			samples.to.plot[first.sample.to.plot:last.sample.to.plot] <- TRUE;
-			normalization.factors.to.plot.scaled.n48 <- subset(normalization.factors.to.plot.scaled, samples.to.plot);
+			genes.to.plot <- x$data.raw[grepl(codeClass, x$data.raw), samples.to.plot];
 
-			# for simplicity just add some dummy data to the end in order to plot 48 samples
-			if (nrow(normalization.factors.to.plot.scaled.n48) < 48){
-				normalization.factors.to.plot.scaled.n48 <- rbind(
-					normalization.factors.to.plot.scaled.n48,
-					matrix(NA, nrow = 48 - nrow(normalization.factors.to.plot.scaled.n48), ncol = 3)
-					);
-				}
-			
 			# setup plotting environment
-			plot(
-				x = NA,
-				type = 'n',
-				lwd = 6,
-				ylab = 'Percent',
+			boxplot(
+				x = genes.to.plot,
+				ylab = 'Raw Counts',
 				xlab = 'Samples',
 				xaxt = 'n',
-				xlim = c(1, 4*48),
-				ylim = c(-135, 135)
-				);
-
-			# plot each normalization parameter as a thick segment
-			segments(
-				x0 = seq(1, 4*48, by = 4),
-				y0 = sign(normalization.factors.to.plot.scaled.n48[,'positiveControls']) * 2,
-				x1 =  seq(1, 4*48, by = 4),
-				y1 = normalization.factors.to.plot.scaled.n48[,'positiveControls'],
-				col = ns.green.rgb,
-				lwd = 2.8
-				);
-
-			segments(
-				x0 =  seq(2, 4*48, by = 4),
-				y0 = sign(normalization.factors.to.plot.scaled.n48[,'negativeControls']) * 2,
-				x1 =  seq(2, 4*48, by = 4),
-				y1 = normalization.factors.to.plot.scaled.n48[,'negativeControls'],
-				col = ns.orange.rgb,
-				lwd = 2.8
-				);
-
-			segments(
-				x0 = seq(3, 4*48, by = 4),
-				y0 = sign(normalization.factors.to.plot.scaled.n48[,'sampleContent']) * 2,
-				x1 = seq(3, 4*48, by = 4),
-				y1 = normalization.factors.to.plot.scaled.n48[,'sampleContent'],
-				col = 'grey60',
-				lwd = 2.8
 				);
 
 			# what samples are outliers i.e. greater than 100% from the mean ~ 3sd
@@ -663,7 +625,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 				legend(
 					x = 96, y = 190,
 					legend = c('Positive Controls', 'Negative Controls', 'RNA Sample Content'),
-					col = c(ns.green.rgb, ns.orange.rgb, 'grey60'),
+					col = c(col[1], col[2], 'grey60'),
 					text.col = 'grey30',
 					lwd = 3,
 					cex = .9,
@@ -689,6 +651,157 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		par(op.multi.plot);
 		}
 
+	##############################################
+	### sample. plot the normalization factors ###
+	##############################################
+
+	if ('norm.factors' %in% plot.type) {
+
+		# skip if no normalization factors
+		if (x$normalization.workflow['CodeCount'] == 'none' && x$normalization.workflow['Background'] == 'none' && x$normalization.workflow['SampleContent'] == 'none')
+			cat("Plot.NanoStringNorm: No normalization factors to plot.\n");
+			}
+		else {
+
+			# setup the plotting environment
+			op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
+
+			# for simplicity add collate all the relevent data into a new object
+			normalization.factors.to.plot <- data.frame(
+				positiveControls = if (x$normalization.workflow['CodeCount'] != 'none') x$sample.summary.stats.norm$pos.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)), 
+				negativeControls = if (x$normalization.workflow['Background'] != 'none') (mean(x$sample.summary.stats.norm$background.level) / x$sample.summary.stats.norm$background.level) else rep(1,nrow(x$sample.summary.stats.norm)), 
+				sampleContent = if (x$normalization.workflow['SampleContent'] != 'none') x$sample.summary.stats.norm$sampleContent.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)),
+				row.names = rownames(x$sample.summary.stats.norm)
+				);
+
+			normalization.factors.to.plot <- as.matrix(normalization.factors.to.plot);
+			#colnames(normalization.factors.to.plot) <- c('positiveControls', 'negativeControls','sampleContent');
+			#rownames(normalization.factors.to.plot) <- rownames(x$sample.summary.stats.norm);
+
+			# first convert normalizaton factors to percentages above and below mean.  remember a high NF reflects a low value.
+			normalization.factors.to.plot.scaled <- normalization.factors.to.plot;
+			normalization.factors.to.plot.scaled[normalization.factors.to.plot >= 1] <- 100 * (normalization.factors.to.plot[normalization.factors.to.plot >= 1] - 1);
+			normalization.factors.to.plot.scaled[normalization.factors.to.plot < 1 ] <- -100 * (1/(normalization.factors.to.plot[normalization.factors.to.plot < 1]) - 1) ;
+
+			# how many plots are needed
+			n.plots <- ceiling(nrow(normalization.factors.to.plot)/48);
+			
+			# loop over each set of 48 samples
+			for (n.plot in 1:n.plots) {
+
+				# get the start and stop rows for plotting in bins of 48 samples.  special exception for the last bin.
+				first.sample.to.plot <- (n.plot - 1) * 48 + 1; 
+				last.sample.to.plot  <- first.sample.to.plot + 47;
+				if (n.plot == n.plots) last.sample.to.plot <- nrow(normalization.factors.to.plot.scaled); 
+
+				# which samples are to be plotted
+				samples.to.plot <- rep(FALSE, nrow(normalization.factors.to.plot.scaled));
+				samples.to.plot[first.sample.to.plot:last.sample.to.plot] <- TRUE;
+				normalization.factors.to.plot.scaled.n48 <- subset(normalization.factors.to.plot.scaled, samples.to.plot);
+
+				# for simplicity just add some dummy data to the end in order to plot 48 samples
+				if (nrow(normalization.factors.to.plot.scaled.n48) < 48){
+					normalization.factors.to.plot.scaled.n48 <- rbind(
+						normalization.factors.to.plot.scaled.n48,
+						matrix(NA, nrow = 48 - nrow(normalization.factors.to.plot.scaled.n48), ncol = 3)
+						);
+					}
+				
+				# setup plotting environment
+				plot(
+					x = NA,
+					type = 'n',
+					lwd = 6,
+					ylab = 'Percent',
+					xlab = 'Samples',
+					xaxt = 'n',
+					xlim = c(1, 4*48),
+					ylim = c(-135, 135)
+					);
+
+				# plot each normalization parameter as a thick segment
+				segments(
+					x0 = seq(1, 4*48, by = 4),
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'positiveControls']) * 2,
+					x1 =  seq(1, 4*48, by = 4),
+					y1 = normalization.factors.to.plot.scaled.n48[,'positiveControls'],
+					col = col[1],
+					lwd = 2.8
+					);
+
+				segments(
+					x0 =  seq(2, 4*48, by = 4),
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'negativeControls']) * 2,
+					x1 =  seq(2, 4*48, by = 4),
+					y1 = normalization.factors.to.plot.scaled.n48[,'negativeControls'],
+					col = col[2],
+					lwd = 2.8
+					);
+
+				segments(
+					x0 = seq(3, 4*48, by = 4),
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'sampleContent']) * 2,
+					x1 = seq(3, 4*48, by = 4),
+					y1 = normalization.factors.to.plot.scaled.n48[,'sampleContent'],
+					col = 'grey60',
+					lwd = 2.8
+					);
+
+				# what samples are outliers i.e. greater than 100% from the mean ~ 3sd
+				outlier.samples <- abs(
+					normalization.factors.to.plot.scaled.n48[,'positiveControls']) > 100 | 
+					abs(normalization.factors.to.plot.scaled.n48[,'negativeControls']) > 100 |
+					abs(normalization.factors.to.plot.scaled.n48[,'sampleContent']) > 100;
+				
+				# if best guess label the outliers
+				if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
+					outlier.samples.labels <- names(outlier.samples);
+					outlier.samples.labels[outlier.samples == FALSE] <- NA;
+					axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
+					axis(side = 1, at = seq(2, 4*48, by = 4), labels = outlier.samples.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
+					}
+				# explicitly label
+				else if ('samples' %in% names(label.ids)) {
+					to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
+					sample.labels <- rownames(x$sample.summary.stats.norm)[to.label];
+					sample.labels[!to.label] <- NA;
+					sample.labels <- c(sample.labels, rep(NA,48-length(sample.labels)));
+					axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
+					axis(side = 1, at = seq(2, 4*48, by = 4), labels = sample.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
+					}
+
+				# add legend and axis labels to the first plot on every page
+				if (n.plot %in% seq(1,100,2)) {
+					legend(
+						x = 96, y = 190,
+						legend = c('Positive Controls', 'Negative Controls', 'RNA Sample Content'),
+						col = c(col[1], col[2], 'grey60'),
+						text.col = 'grey30',
+						lwd = 3,
+						cex = .9,
+						horiz = TRUE,
+						bty = 'n',
+						xpd = NA,
+						y.intersp = 1,
+						xjust = 0.5
+						);
+					if (title == TRUE) mtext('Sample: Normalization Parameters', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
+					mtext('Samples', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 2);
+					mtext('Percent', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 3, las = 0);
+					}
+
+				# add some lines
+				abline(h =  100, lty = 2, lwd = .5, col = 'grey30');
+				abline(h = -100, lty = 2, lwd = .5, col = 'grey30');
+				abline(h =    0, lwd = 2, lty =  1, col = 'grey30');
+				box(col = 'grey60', lwd = 3);
+				}
+
+			# reset the plotting parameters
+			par(op.multi.plot);
+			}
+		}
+
 	###################################################################################
 	### sample. the relationship between the observed vs expected positive controls ###
 	###################################################################################
@@ -705,10 +818,16 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		max.obs.pos <- max(log2(x$raw.data[grepl('[Pp]ositive',x$raw.data$Code.Class),-c(1:3)]), na.rm = TRUE);
 
 		# which plots should have x axis and labels (bottom of page)
-		xlab.plots <- c(seq(13, ncol(x$normalized.data), by = 12), seq(14, ncol(x$normalized.data), by = 12), seq(15, ncol(x$normalized.data), by = 12));
+		if (ncol(x$normalized.data) >= 15) {
+			xlab.plots <- c(seq(13, ncol(x$normalized.data), by = 12), seq(14, ncol(x$normalized.data), by = 12), seq(15, ncol(x$normalized.data), by = 12));
+			}
+		else {
+			xlab.plots <- c(10,11,12);
+			}
 
 		# loop over each sample
 		for (i in 4:ncol(x$normalized.data)) {
+
 			sample.name <- colnames(x$normalized.data)[i];
 
 			# the observed counts
@@ -729,7 +848,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			points(
 				x = pos.control.conc,
 				y = pos.control.count,
-				col = ns.green.rgb,
+				col = col[1],
 				cex = 1.5
 				);
 
@@ -737,7 +856,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 			points(
 				x = jitter(rep(0,length(x$raw.data[grepl('[Nn]egative', x$raw.data$Code.Class),i])), amount = .5),
 				y = log2(x$raw.data[grepl('[Nn]egative', x$raw.data$Code.Class),i]),
-				col = ns.orange.rgb,
+				col = col[2],
 				cex = 1.5
 				);
 
@@ -762,7 +881,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 					#x = 14.5, y = 22.3,
 					x = 14.5, y = max.obs.pos + 6.9,
 					legend = c('Positive Controls', 'Negative Controls'),
-					col = c(ns.green.rgb, ns.orange.rgb),
+					col = c(col[1], col[2]),
 					text.col = 'grey30',
 					lwd = 3,
 					cex = 1.5,
@@ -771,10 +890,12 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 					xjust = 0.5,
 					xpd = NA
 					);
+
 				if (title == TRUE) mtext('Sample: Positive Controls', side = 3, outer = TRUE, col = 'grey30', cex = 2, line = 2);
 				mtext(expression(paste('Expected Concentration lo',g[2], ' fM', sep = '')), side = 1, outer = TRUE,col = 'grey30', line = 2);
 				mtext(expression(paste('Observed lo',g[2], ' Counts'), sep = ''), side = 2, outer = TRUE, las = 0, col = 'grey30',line = 3);
 				}
+		
 			}
 
 		# reset the plotting parameters
