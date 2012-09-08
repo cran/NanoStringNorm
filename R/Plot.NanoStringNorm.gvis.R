@@ -127,7 +127,8 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm", "sample"), sa
 		else {
 
 			# resets the browser setting
-			if (getOption("browser") == "/usr/bin/open" | getOption("browser") == "") options(browser = "xdg-open");
+#			if (getOption("browser") == "/usr/bin/open" | getOption("browser") == "") options(browser = "xdg-open");
+			if (getOption("browser", "/usr/bin/open") == "/usr/bin/open") options(browser = "xdg-open");
 
 			# plot using internal R webserver
 			plot(plot.merge);

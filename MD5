@@ -1,9 +1,9 @@
-c4959c6397699ad1dd30c01b4ae0e44f *DESCRIPTION
+855ef4c351f4b9e1209fb57427bb44e3 *DESCRIPTION
 cc4a7a31eea294ae78c9151709b1c8e4 *NAMESPACE
 6917711f87a6718f8b62cf170acb22fa *NEWS
 b3f5c7065d67c7fa929aef85f1b609ba *R/NanoStringNorm.R
 54684b5ddc44ba6cbece41fdf3967960 *R/Plot.NanoStringNorm.R
-7b8d5ba13ae174fbcc82e3df0aa0b644 *R/Plot.NanoStringNorm.gvis.R
+750143e588254e9c698c08b3853f3459 *R/Plot.NanoStringNorm.gvis.R
 6f9fa8a2db6b6480bb7579a8757f251e *R/background.normalization.R
 a4e6aace89fc1fcae5ce13eb465f249e *R/check.trait.values.R
 b1b3018de0f8dc7e5c2a18c2f0046cb0 *R/code.count.normalization.R
@@ -31,7 +31,7 @@ c6c59fabccebab69644399cef90639fc *R/sample.content.normalization.R
 d285b32a177a78681ac7a52f63b36a5c *R/unit.testing.NanoStringNorm.R
 e33d4377d2803b3170cd524f984d5b34 *data/NanoString.rda
 c3b9aeb26fb9bc8dea552b46dad1914a *inst/doc/NanoStringNorm_Introduction.Rnw
-28ff86432e9e9fa23d445d4e31ac8efa *inst/doc/NanoStringNorm_Introduction.pdf
+9c90b2909ddae4376e864a86fa2a65f9 *inst/doc/NanoStringNorm_Introduction.pdf
 768c0f4312ad3ecd60dc8fdd916df0d6 *inst/extdata/RCC_files/RCCCollector1_rat_tcdd.xls
 c294ebf5ea4165f6be0d42022f1419d3 *inst/extdata/input/2011-11-01_NanoString_mRNA_TCDD_anno.txt
 56c447752ecbef7e70abccc2241499a6 *inst/extdata/input/date_data.txt
