@@ -46,14 +46,20 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 		# get a list of expressed stable genes
 			gene.summary.stats  <- as.data.frame(NanoStringNorm:::get.gene.summary.stats(x, anno));
 			low.cv.genes <- (
-				grepl('Endogenous|ousekeeping|ontrol', anno$Code.Class) & 
-				gene.summary.stats$Mean > 10 & 
-				gene.summary.stats$Mean > quantile(gene.summary.stats$Mean, 0.1, na.rm = TRUE) &
-				gene.summary.stats$CV < quantile(gene.summary.stats$CV, 0.75, na.rm = TRUE)
+				grepl('endogenous|housekeeping|control', anno$Code.Class, ignore.case=TRUE) & 
+#				gene.summary.stats$Mean > 10 & 
+				gene.summary.stats$Mean > quantile(gene.summary.stats$Mean, 0.5, na.rm = TRUE) &
+				gene.summary.stats$CV < quantile(gene.summary.stats$CV, 0.5, na.rm = TRUE)
 				);
 
+			low.cv.genes.rank.lt10 <- rank(gene.summary.stats[low.cv.genes,'CV'], ties.method = 'random') <= 10;
+
+			cat('SampleContent: The following genes have been chosen to adjust for RNA Content.\n\n');
+			print(data.frame("HK.Candidates" = rownames(x[low.cv.genes,][low.cv.genes.rank.lt10,])));
+			cat('\n');
+
 			rna.content <- apply(
-				X = x[low.cv.genes,],
+				X = x[low.cv.genes,][low.cv.genes.rank.lt10,],
 				MARGIN = 2, 
 				FUN = NanoStringNorm:::get.geo.mean,
 				logged = logged

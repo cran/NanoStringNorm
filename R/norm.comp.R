@@ -189,7 +189,7 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 							);
 
 						cv.pos <- tryCatch(
-							expr = mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)", "POS_D(2)")], na.rm = TRUE),
+							expr = mean(cv[x$Name %in% c("POS_A(128)","POS_B(32)","POS_C(8)", "POS_D(2)", "POS_A", "POS_B", "POS_C", "POS_D")], na.rm = TRUE),
 							error = function(e) { return ( c(NA)); }
 							);
 

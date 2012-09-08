@@ -66,7 +66,10 @@ read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 
 	# change spaces to dots in sample names
 	sample.ids <- gsub(" ", ".", sample.ids);
-	sample.ids <- gsub("^([0-9])", "x\\1" ,sample.ids);  
+	sample.ids <- gsub("^([0-9])", "X\\1" ,sample.ids);  
+
+	# add sample names
+	colnames(header) <- sample.ids;
 
 	# define pattern of first line of count data
 	pattern.first.line.counts <- "Code";

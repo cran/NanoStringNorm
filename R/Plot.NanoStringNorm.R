@@ -1,4 +1,4 @@
-Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = NA, title = TRUE, col = NA) {
+Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = list(), label.as.legend = TRUE, label.n = 10, title = TRUE, col = NA) {
 
 	# check that the object being plotted is the right class
 	if ( class(x) != 'NanoStringNorm' ) { stop('In order to plot the input object needs to be of class NanoStringNorm.  Try changing return.matrix.of.endogenous.probe to FALSE.'); }
@@ -31,7 +31,10 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 
 	if ('mean.sd' %in% plot.type) {
 		# define controls
-		is.control <- !grepl('Endogenous', x$normalized.data$Code.Class);
+		is.control <- !grepl('endogenous', x$normalized.data$Code.Class,ignore.case=TRUE);
+		is.positive.control <- grepl('pos', x$normalized.data$Code.Class,ignore.case=TRUE);
+		is.negative.control <- grepl('neg', x$normalized.data$Code.Class,ignore.case=TRUE);
+		is.hk.control <- grepl("control|housekeeping", x$normalized.data$Code.Class,ignore.case=TRUE);
 
 		# setup plotting environment
 		plot(
@@ -47,8 +50,20 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 
 		# add the data points
 		points(
-			x = x$gene.summary.stats.norm[!grepl('Endogenous', x$normalized.data$Code.Class),'Mean'],
-			y = x$gene.summary.stats.norm[!grepl('Endogenous', x$normalized.data$Code.Class),'SD'],
+			x = x$gene.summary.stats.norm[is.negative.control,'Mean'],
+			y = x$gene.summary.stats.norm[is.negative.control,'SD'],
+			col = col[2],
+			pch = 17
+			);
+		points(
+			x = x$gene.summary.stats.norm[is.positive.control,'Mean'],
+			y = x$gene.summary.stats.norm[is.positive.control,'SD'],
+			col = col[2],
+			pch = 18
+			);
+		points(
+			x = x$gene.summary.stats.norm[is.hk.control,'Mean'],
+			y = x$gene.summary.stats.norm[is.hk.control,'SD'],
 			col = col[2]
 			);
 
@@ -56,14 +71,15 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		lines(lowess(x = x$gene.summary.stats.norm$Mean, y = x$gene.summary.stats.norm$SD), lwd = 4, col = 'grey60');
 		box(col = 'grey60', lwd = 3);
 
-
 		# add the legend
 		legend(
-			x = 'topright',
-			legend = c('Endogenous', 'Controls'),
-			col = c(col[1], col[2]),
+			x = 'topleft',
+			legend = c('Endogenous','Positive','Negative','Housekeeping'),
+			col = c(col[1], col[2], col[2], col[2]),
+			pch = c(16, 18,17,16),
 			text.col = 'grey30',
-			lwd = 4,
+#			lwd = 4,
+			pt.cex = 1.5,
 			bty = 'n'
 			);
 
@@ -77,7 +93,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		SD.outliers <- (x$gene.summary.stats.norm$SD - mean(x$gene.summary.stats.norm$SD)) / sd(x$gene.summary.stats.norm$SD) > 3;
 
 		# add best guess labels
-		if (label.best.guess == TRUE & !'genes' %in% names(label.ids)) { 
+		if (label.best.guess == TRUE) {
+# & !'genes' %in% names(label.ids)) { 
 
 			# high mean low sd
 			if (any(is.high.mean.and.low.sd)) {
@@ -102,10 +119,10 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 					cex = .7
 					);
 				}
-
 			}
+
 		# add explicit labels
-		else if ('genes' %in% names(label.ids)) {
+		if ('genes' %in% names(label.ids)) {
 			to.label <- rownames(x$gene.summary.stats.norm) %in% label.ids$genes;
 			text(
 				x = x$gene.summary.stats.norm$Mean[to.label], 
@@ -149,8 +166,8 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		box(col = 'grey60', lwd = 3);
 
 		# add the legend
-		cv.pos.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)"), 'CV'], na.rm = TRUE),1);
-		cv.pos.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)"), 'CV'], na.rm = TRUE),1);
+		cv.pos.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)","POS_A", "POS_B", "POS_C", "POS_D"), 'CV'], na.rm = TRUE),1);
+		cv.pos.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Name %in% c("POS_A(128)", "POS_B(32)", "POS_C(8)", "POS_D(2)","POS_A", "POS_B", "POS_C", "POS_D"), 'CV'], na.rm = TRUE),1);
 
 		cv.hk.before <- round(mean(x$gene.summary.stats.raw[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);
 		cv.hk.after <- round(mean(x$gene.summary.stats.norm[x$normalized.data$Code.Class %in% c("housekeeping", "Housekeeping", "Control", "control"), 'CV'], na.rm = TRUE),1);
@@ -178,7 +195,6 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 	#########################################################################################################
 
 	if ('volcano' %in% plot.type & ncol(x$gene.summary.stats.norm) > 4) {
-browser()
 		# get the trait names
 		trait.names <- gsub(
 			pattern = 'FC_',
@@ -209,7 +225,12 @@ browser()
 				}
 
 			# which genes have the most significant pvalues.
-			trait.top <- rank(-trait.p, ties.method = 'first') <= 10; 
+			is.gene.trait.top <- rank(-trait.p, ties.method = 'first') <= label.n; 
+
+			# remove duplicate labels
+			if ('genes' %in% names(label.ids)) {
+				label.ids$genes <- unique(label.ids$genes[!label.ids$genes %in% rownames(x$gene.summary.stats.norm)[is.gene.trait.top]]);
+				}
 
 			# define the ylimits.  if very large truncate the top of the plot
 			trait.ylim.max <- max(trait.p, na.rm = TRUE);
@@ -228,6 +249,7 @@ browser()
 				trait.ylim <- 1.8;
 				}
 
+			# scale function to change data to 0-1 for plotting
 			scale.data <- function(x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 	(x - from[1])/diff(from) * diff(to) + to[1];
 	}
@@ -240,51 +262,104 @@ browser()
 			n1 <- sum(x$traits[,trait.name]==1,na.rm = TRUE);
 			n2 <- sum(x$traits[,trait.name]==2,na.rm = TRUE);
 
+			fold.change.label <- ifelse(as.logical(x$normalization.workflow[['is.log']]) | as.logical(x$normalization.workflow[['take.log']]), expression(paste('-lo',g[2],'Fold-Change', sep = '')), 'Fold-change');
+
 			# setup the plotting environment
 			plot(
 				x = trait.fc,
 				y = trait.p,
-				xlab = 'Fold-change',
+				xlab = fold.change.label,
 				ylab = expression(paste('-lo',g[10],'P', sep = '')),
 				main = if (title == TRUE) paste('Gene: Differential Expression\n',trait.name, '(n =',n2,'vs',n1,')') else NA,
 				pch = 20,
 				col = trait.col,
 				cex = trait.cex,
-				xlim = c(-max(abs(trait.fc), na.rm = TRUE), max(abs(trait.fc), na.rm = TRUE)),
+#				xlim = c(-max(abs(trait.fc), na.rm = TRUE), max(abs(trait.fc), na.rm = TRUE)),
+				xlim = c(-trait.xlim,trait.xlim),
 				ylim = c(0, trait.ylim)
 				);
 
 			# add a more informative axis label if the pvalues are truncated
-			if (trait.ylim > 10) {
-				lines(x = c(-trait.xlim,-trait.xlim + .25,-trait.xlim,-trait.xlim-.25,-trait.xlim) - (.04 * 2 * trait.xlim),y = seq(10,11,.25), lwd = 2, col = 'grey60', xpd = NA);
+			if (trait.ylim == 11) {
+				xlim.offset <- .05 * trait.xlim;
+				lines(x = c(-trait.xlim,-trait.xlim + xlim.offset,-trait.xlim,-trait.xlim-xlim.offset,-trait.xlim) - (.04 * 2 * trait.xlim),y = seq(10,11,.25), lwd = 2, col = 'grey60', xpd = NA);
 				axis(side = 2, at = 11, labels = ceiling(trait.ylim.max), col = 'grey30', col.ticks = 'black', cex.axis = 1.2);
 				}
 
-			# if best guess labeling then plot the top ranked genes
-			if (label.best.guess == TRUE & !'genes' %in% names(label.ids)) {
-				text(
-					x = trait.fc[trait.top], 
-					y = trait.p[trait.top], 
-					labels = gsub('hsa-','',rownames(x$gene.summary.stats.norm)[trait.top]), 
-					adj = 1,
-					pos = c(1),
-					col = 'grey30',
+			is.gene.label.manual <- rownames(x$gene.summary.stats.norm) %in% label.ids$genes;
+
+			# label points or as legend
+			if (label.as.legend) {
+				labels.best.guess <- 1:sum(is.gene.trait.top);
+
+				if (length(label.ids$genes) > 0) {
+					labels.manual <- (sum(is.gene.trait.top) + 1):(sum(is.gene.trait.top) + length(label.ids$genes));
+					}
+				else {
+					labels.manual <- '';
+					}
+
+				# formatting the legend labels
+				labels.for.legend <-rownames(x$normalized.data)[rownames(x$normalized.data) %in% c(rownames(x$gene.summary.stats.norm)[is.gene.trait.top], rownames(x$gene.summary.stats.norm)[is.gene.label.manual])];
+				labels.for.legend <- gsub('hsa-', '', labels.for.legend);
+				labels.for.legend <- labels.for.legend[order(trait.p[is.gene.trait.top | is.gene.label.manual], decreasing = TRUE)];
+				labels.for.legend <- paste(1:length(labels.for.legend), ": ", labels.for.legend, sep = "");
+
+				# don't add legend if missing pvalue
+				labels.for.legend <- labels.for.legend[!is.na(trait.p[is.gene.trait.top | is.gene.label.manual][order(trait.p[is.gene.trait.top | is.gene.label.manual], decreasing = TRUE)])];
+
+				legend.ylim.offset <- ifelse(trait.ylim == 11, 1, 0);
+
+				# the label legend
+				legend(
+					x = -trait.xlim - trait.xlim * .14,
+					y = trait.ylim - legend.ylim.offset,
+					legend = labels.for.legend,
+					bty = 'n',
 					cex = .7,
-					srt = 90
+					title = expression(bold("Top Genes:"))
 					);
 				}
-			# label the genes explicitly
-			else if ('genes' %in% names(label.ids)) {
-				to.label <- rownames(x$gene.summary.stats.norm) %in% label.ids$genes;
+			else {
+				is.gene.label.manual <- rownames(x$gene.summary.stats.norm) %in% label.ids$genes;
+				labels.best.guess <- gsub('hsa-','',rownames(x$gene.summary.stats.norm)[is.gene.trait.top]);
+				labels.manual <- gsub('hsa-','',rownames(x$gene.summary.stats.norm)[is.gene.label.manual]);
+			}
+
+			# if best guess labeling then plot the top ranked genes
+			if (label.best.guess == TRUE) {
+				# change the relative position of the label depending on if using a legend
+				if (label.as.legend) {
+					pos.value <- NULL;
+					}
+				else {
+					pos.value <- 1;
+					}
+
+				# label the best guess i.e. most sig
 				text(
-					x = trait.fc[to.label], 
-					y = trait.p[to.label], 
-					labels = gsub('hsa-','',rownames(x$gene.summary.stats.norm)[to.label]), 
-					adj = 1,
-					pos = c(1),
+					x = trait.fc[is.gene.trait.top][order(trait.p[is.gene.trait.top], decreasing = TRUE)], 
+					y = trait.p[is.gene.trait.top][order(trait.p[is.gene.trait.top], decreasing = TRUE)], 
+					labels = labels.best.guess[1:sum(is.gene.trait.top)], 
+					adj = ifelse(label.as.legend, .5, 1),
+					pos = pos.value,
 					col = 'grey30',
-					cex = .7,
-					srt = 90
+					cex = .6,
+					srt = ifelse(label.as.legend,0,90)
+					);
+				}
+
+			# label the genes explicitly
+			if ('genes' %in% names(label.ids)) {
+				text(
+					x = trait.fc[is.gene.label.manual][order(trait.p[is.gene.label.manual], decreasing = TRUE)],
+					y = trait.p[is.gene.label.manual][order(trait.p[is.gene.label.manual], decreasing = TRUE)], 
+					labels = labels.manual,
+					adj = ifelse(label.as.legend, .5, 1),
+					pos = pos.value,
+					col = 'grey30',
+					cex = .6,
+					srt = ifelse(label.as.legend,0,90)
 					);
 				}
 
@@ -363,7 +438,8 @@ browser()
 				}
 
 			# label the samples with low mean
-			if (any(abs(outlier.mean) > 3) & !'samples' %in% names(label.ids)) {
+			if (any(abs(outlier.mean) > 3) ) {
+# & !'samples' %in% names(label.ids)) {
 				text(
 					x = raw.sample.Mean[abs(outlier.mean) > 3], 
 					y = x$sample.summary.stats.norm$Sample.Missing[abs(outlier.mean) > 3], 
@@ -375,12 +451,12 @@ browser()
 				}
 			}
 		# explicitly label the samples
-		else if ('samples' %in% names(label.ids)) {
-			to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
+		if ('samples' %in% names(label.ids)) {
+			is.gene.manual.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
 			text(
-				x = raw.sample.Mean[to.label], 
-				y = x$sample.summary.stats.norm$Sample.Missing[to.label], 
-				labels = rownames(x$sample.summary.stats.norm[to.label,]), 
+				x = raw.sample.Mean[is.gene.manual.label], 
+				y = x$sample.summary.stats.norm$Sample.Missing[is.gene.manual.label], 
+				labels = rownames(x$sample.summary.stats.norm[is.gene.manual.label,]), 
 				pos = c(1,2,3,4),
 				col = 'grey30',
 				cex = .7
@@ -448,7 +524,8 @@ browser()
 		box(col = 'grey60', lwd = 3);
 
 		# if best buess label then label outliers in terms of residuals
-		if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
+		if (label.best.guess == TRUE) {
+# & !'samples' %in% names(label.ids)) {
 			if (any(abs(fit.RNA.outliers) > 3)) {
 				text(
 					x = RNA.top[abs(fit.RNA.outliers) > 3], 
@@ -461,7 +538,7 @@ browser()
 				}
 			}
 		# label samples explicitly
-		else if ('samples' %in% names(label.ids)) {
+		if ('samples' %in% names(label.ids)) {
 			to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
 			text(
 				x = RNA.top[to.label], 
@@ -499,7 +576,7 @@ browser()
 			if (x$normalization.workflow['SampleContent'] != 'none' ) {
 				sample.statistics <- c(sample.statistics,'RNA Content');
 				}
-			
+
 			if (length(trait.names) > 10) {
 				op.batch.effects <- par(mfcol = c(3,1), mar=c(2,1,2,0), oma = c(6,5,5,1));
 				}
@@ -514,7 +591,7 @@ browser()
 
 				batch.cex <- -log10(batch.data$p.ttest);
 				batch.cex[batch.data$p.ttest > 0.05] <- 1;
-				#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
+			#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
 				#batch.cex[batch.data$p.ttest < 0.05] <- punif(batch.cex[batch.data$p.ttest > 0.05]);
 
 				batch.diff <- batch.data$mean.grp2 - batch.data$mean.grp1;
@@ -536,7 +613,7 @@ browser()
 					if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
 						if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
 						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
-						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2.2, las = 0);
+						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2.3, las = 0);
 						axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
 						}
 					}
@@ -563,93 +640,94 @@ browser()
 	### sample. plot the raw controls  ###
 	######################################
 
-	if ('raw.controls' %in% plot.type) {
-
-		# setup the plotting environment
-		op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
-
-		# how many plots are needed
-		n.plots <- ceiling(nrow(x$raw.data)/24);
-
-		codeClasses <- c("Positive", "Negative", "Housekeeping", "Endogenous");
-
-		# loop over codeclass
-		for (codeClass in codeClasses) {
-
-		# loop over each set of 24 samples
-		for (n.plot in 1:n.plots) {
-
-			# get the start and stop rows for plotting in bins of 24 samples.  special exception for the last bin.
-			first.sample.to.plot <- (n.plot - 1) * 24 + 1; 
-			last.sample.to.plot  <- first.sample.to.plot + 24;
-			if (n.plot == n.plots) last.sample.to.plot <- ncol(x$raw.data); 
-
-			# which samples are to be plotted
-			samples.to.plot <- rep(FALSE, ncol(x$raw.data));
-			samples.to.plot[first.sample.to.plot:last.sample.to.plot] <- TRUE;
-			genes.to.plot <- x$data.raw[grepl(codeClass, x$data.raw), samples.to.plot];
-
-			# setup plotting environment
-			boxplot(
-				x = genes.to.plot,
-				ylab = 'Raw Counts',
-				xlab = 'Samples',
-				xaxt = 'n',
-				);
-
-			# what samples are outliers i.e. greater than 100% from the mean ~ 3sd
-			outlier.samples <- abs(
-				normalization.factors.to.plot.scaled.n48[,'positiveControls']) > 100 | 
-				abs(normalization.factors.to.plot.scaled.n48[,'negativeControls']) > 100 |
-				abs(normalization.factors.to.plot.scaled.n48[,'sampleContent']) > 100;
-			
-			# if best guess label the outliers
-			if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
-				outlier.samples.labels <- names(outlier.samples);
-				outlier.samples.labels[outlier.samples == FALSE] <- NA;
-				axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
-				axis(side = 1, at = seq(2, 4*48, by = 4), labels = outlier.samples.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
-				}
-			# explicitly label
-			else if ('samples' %in% names(label.ids)) {
-				to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
-				sample.labels <- rownames(x$sample.summary.stats.norm)[to.label];
-				sample.labels[!to.label] <- NA;
-				sample.labels <- c(sample.labels, rep(NA,48-length(sample.labels)));
-				axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
-				axis(side = 1, at = seq(2, 4*48, by = 4), labels = sample.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
-				}
-
-			# add legend and axis labels to the first plot on every page
-			if (n.plot %in% seq(1,100,2)) {
-				legend(
-					x = 96, y = 190,
-					legend = c('Positive Controls', 'Negative Controls', 'RNA Sample Content'),
-					col = c(col[1], col[2], 'grey60'),
-					text.col = 'grey30',
-					lwd = 3,
-					cex = .9,
-					horiz = TRUE,
-					bty = 'n',
-					xpd = NA,
-					y.intersp = 1,
-					xjust = 0.5
-					);
-				if (title == TRUE) mtext('Sample: Normalization Parameters', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
-				mtext('Samples', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 2);
-				mtext('Percent', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 3, las = 0);
-				}
-
-			# add some lines
-			abline(h =  100, lty = 2, lwd = .5, col = 'grey30');
-			abline(h = -100, lty = 2, lwd = .5, col = 'grey30');
-			abline(h =    0, lwd = 2, lty =  1, col = 'grey30');
-			box(col = 'grey60', lwd = 3);
-			}
-
-		# reset the plotting parameters
-		par(op.multi.plot);
-		}
+#	if ('raw.controls' %in% plot.type) {
+#
+#		# setup the plotting environment
+#		op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
+#
+#		# how many plots are needed
+#		n.plots <- ceiling(nrow(x$raw.data)/24);
+#
+#		codeClasses <- c("Positive", "Negative", "Housekeeping", "Endogenous");
+#
+#		# loop over codeclass
+#		for (codeClass in codeClasses) {
+#
+#			# loop over each set of 24 samples
+#			for (n.plot in 1:n.plots) {
+#
+#				# get the start and stop rows for plotting in bins of 24 samples.  special exception for the last bin.
+#				first.sample.to.plot <- (n.plot - 1) * 24 + 1; 
+#				last.sample.to.plot  <- first.sample.to.plot + 24;
+#				if (n.plot == n.plots) last.sample.to.plot <- ncol(x$raw.data); 
+#
+#				# which samples are to be plotted
+#				samples.to.plot <- rep(FALSE, ncol(x$raw.data));
+#				samples.to.plot[first.sample.to.plot:last.sample.to.plot] <- TRUE;
+#				genes.to.plot <- x$data.raw[grepl(codeClass, x$data.raw), samples.to.plot];
+#
+#				# setup plotting environment
+#				boxplot(
+#					x = genes.to.plot,
+#					ylab = 'Raw Counts',
+#					xlab = 'Samples',
+#					xaxt = 'n',
+#					);
+#
+#				# what samples are outliers i.e. greater than 100% from the mean ~ 3sd
+#				outlier.samples <- abs(
+#					normalization.factors.to.plot.scaled.n48[,'positiveControls']) > 100 | 
+#					abs(normalization.factors.to.plot.scaled.n48[,'negativeControls']) > 100 |
+#					abs(normalization.factors.to.plot.scaled.n48[,'sampleContent']) > 100;
+#				
+#				# if best guess label the outliers
+#				if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
+#					outlier.samples.labels <- names(outlier.samples);
+#					outlier.samples.labels[outlier.samples == FALSE] <- NA;
+#					axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
+#					axis(side = 1, at = seq(2, 4*48, by = 4), labels = outlier.samples.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
+#					}
+#				# explicitly label
+#				else if ('samples' %in% names(label.ids)) {
+#					to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
+#					sample.labels <- rownames(x$sample.summary.stats.norm)[to.label];
+#					sample.labels[!to.label] <- NA;
+#					sample.labels <- c(sample.labels, rep(NA,48-length(sample.labels)));
+#					axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
+#					axis(side = 1, at = seq(2, 4*48, by = 4), labels = sample.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
+#					}
+#
+#				# add legend and axis labels to the first plot on every page
+#				if (n.plot %in% seq(1,100,2)) {
+#					legend(
+#						x = 96, y = 190,
+#						legend = c('Positive Controls', 'Negative Controls', 'RNA Sample Content'),
+#						col = c(col[1], col[2], 'grey60'),
+#						text.col = 'grey30',
+#						lwd = 3,
+#						cex = .9,
+#						horiz = TRUE,
+#						bty = 'n',
+#						xpd = NA,
+#						y.intersp = 1,
+#						xjust = 0.5
+#						);
+#
+#					if (title == TRUE) mtext('Sample: Normalization Parameters', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
+#					mtext('Samples', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 2);
+#					mtext('Percent', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 3, las = 0);
+#					}
+#
+#				# add some lines
+#				abline(h =  100, lty = 2, lwd = .5, col = 'grey30');
+#				abline(h = -100, lty = 2, lwd = .5, col = 'grey30');
+#				abline(h =    0, lwd = 2, lty =  1, col = 'grey30');
+#				box(col = 'grey60', lwd = 3);
+#				}
+#			}
+#		# reset the plotting parameters
+#		par(op.multi.plot);
+#		}
 
 	##############################################
 	### sample. plot the normalization factors ###
@@ -658,14 +736,10 @@ browser()
 	if ('norm.factors' %in% plot.type) {
 
 		# skip if no normalization factors
-		if (x$normalization.workflow['CodeCount'] == 'none' && x$normalization.workflow['Background'] == 'none' && x$normalization.workflow['SampleContent'] == 'none')
+		if (x$normalization.workflow['CodeCount'] == 'none' && x$normalization.workflow['Background'] == 'none' && x$normalization.workflow['SampleContent'] == 'none') {
 			cat("Plot.NanoStringNorm: No normalization factors to plot.\n");
 			}
 		else {
-
-			# setup the plotting environment
-			op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
-
 			# for simplicity add collate all the relevent data into a new object
 			normalization.factors.to.plot <- data.frame(
 				positiveControls = if (x$normalization.workflow['CodeCount'] != 'none') x$sample.summary.stats.norm$pos.norm.factor else rep(1,nrow(x$sample.summary.stats.norm)), 
@@ -685,7 +759,19 @@ browser()
 
 			# how many plots are needed
 			n.plots <- ceiling(nrow(normalization.factors.to.plot)/48);
-			
+
+			# setup the plotting environment
+			if (n.plots > 1) {
+				op.multi.plot <- par(mfrow = c(2,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
+				legend.y.pos <- 190;
+				segment.offset.y.pos <- 2;
+				}
+			else {
+				op.multi.plot <- par(mfrow = c(1,1), mar=c(1,0,1,0), oma = c(5,5,5,2));
+				legend.y.pos <- 170;
+				segment.offset.y.pos <- 1;
+				}
+
 			# loop over each set of 48 samples
 			for (n.plot in 1:n.plots) {
 
@@ -706,7 +792,7 @@ browser()
 						matrix(NA, nrow = 48 - nrow(normalization.factors.to.plot.scaled.n48), ncol = 3)
 						);
 					}
-				
+
 				# setup plotting environment
 				plot(
 					x = NA,
@@ -722,7 +808,7 @@ browser()
 				# plot each normalization parameter as a thick segment
 				segments(
 					x0 = seq(1, 4*48, by = 4),
-					y0 = sign(normalization.factors.to.plot.scaled.n48[,'positiveControls']) * 2,
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'positiveControls']) * segment.offset.y.pos,
 					x1 =  seq(1, 4*48, by = 4),
 					y1 = normalization.factors.to.plot.scaled.n48[,'positiveControls'],
 					col = col[1],
@@ -731,7 +817,7 @@ browser()
 
 				segments(
 					x0 =  seq(2, 4*48, by = 4),
-					y0 = sign(normalization.factors.to.plot.scaled.n48[,'negativeControls']) * 2,
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'negativeControls']) * segment.offset.y.pos,
 					x1 =  seq(2, 4*48, by = 4),
 					y1 = normalization.factors.to.plot.scaled.n48[,'negativeControls'],
 					col = col[2],
@@ -740,7 +826,7 @@ browser()
 
 				segments(
 					x0 = seq(3, 4*48, by = 4),
-					y0 = sign(normalization.factors.to.plot.scaled.n48[,'sampleContent']) * 2,
+					y0 = sign(normalization.factors.to.plot.scaled.n48[,'sampleContent']) * segment.offset.y.pos,
 					x1 = seq(3, 4*48, by = 4),
 					y1 = normalization.factors.to.plot.scaled.n48[,'sampleContent'],
 					col = 'grey60',
@@ -754,14 +840,15 @@ browser()
 					abs(normalization.factors.to.plot.scaled.n48[,'sampleContent']) > 100;
 				
 				# if best guess label the outliers
-				if (label.best.guess == TRUE & !'samples' %in% names(label.ids)) {
+				if (label.best.guess == TRUE) {
+# & !'samples' %in% names(label.ids)) {
 					outlier.samples.labels <- names(outlier.samples);
 					outlier.samples.labels[outlier.samples == FALSE] <- NA;
 					axis(side = 1, at = seq(2, 4*48, by = 4), labels = FALSE, col.axis = 'grey30', las = 3, cex.axis = .8);
 					axis(side = 1, at = seq(2, 4*48, by = 4), labels = outlier.samples.labels, col.axis = 'grey30', las = 3, tick = FALSE, cex.axis = .5, line = -1.5, hadj = 0);
 					}
 				# explicitly label
-				else if ('samples' %in% names(label.ids)) {
+				if ('samples' %in% names(label.ids)) {
 					to.label <- rownames(x$sample.summary.stats.norm) %in% label.ids$samples;
 					sample.labels <- rownames(x$sample.summary.stats.norm)[to.label];
 					sample.labels[!to.label] <- NA;
@@ -772,8 +859,9 @@ browser()
 
 				# add legend and axis labels to the first plot on every page
 				if (n.plot %in% seq(1,100,2)) {
+
 					legend(
-						x = 96, y = 190,
+						x = 96, y = legend.y.pos,
 						legend = c('Positive Controls', 'Negative Controls', 'RNA Sample Content'),
 						col = c(col[1], col[2], 'grey60'),
 						text.col = 'grey30',
@@ -808,8 +896,20 @@ browser()
 
 	if ('positive.controls' %in% plot.type) {
 
+		n.plots <- ncol(x$normalized.data) - 3;
+
+		# setup the plotting environment
+		if (n.plots > 6) {
+			op.samples <- par(mfrow = c(4,3), mar=c(1,0,1,0), oma = c(5,5,5,2));
+			y.legend.pos <- 6.9;
+			x.legend.pos <- 14.5;
+			}
+		else {
+			op.samples <- par(mfrow = c(3,2), mar=c(1,0,1,0), oma = c(5,5,5,2));
+			y.legend.pos <- 5;
+			x.legend.pos <- 6;
+			}
 		# setup the plotting envirnoment
-		op.samples <- par(mfrow = c(4,3), mar=c(1,0,1,0), oma = c(5,5,5,2));
 
 		# the expected concentration
 		pos.control.conc <- log2(c(.125, .5, 2, 8, 32, 128));
@@ -869,7 +969,7 @@ browser()
 			fit.pos <- lm(pos.control.count ~ pos.control.conc);
 
 			# add the best fit formula to the title
-			mtext(text = paste(sample.name, 'y =', round(fit.pos$coef[2], 2), 'x +', round(fit.pos$coef[1], 2)), side = 3, col = 'grey30', cex = .7, line = .2);
+			mtext(text = paste(sample.name, '\n','y =', round(fit.pos$coef[2], 2), 'x +', round(fit.pos$coef[1], 2)), side = 3, col = 'grey30', cex = .7, line = -1);
 
 			# add some lines
 			abline(fit.pos, lwd = 2, col = 'grey60');
@@ -879,7 +979,7 @@ browser()
 			if (i %in% seq(4,ncol(x$normalized.data),12)) {
 				legend(
 					#x = 14.5, y = 22.3,
-					x = 14.5, y = max.obs.pos + 6.9,
+					x = x.legend.pos, y = max.obs.pos + y.legend.pos,
 					legend = c('Positive Controls', 'Negative Controls'),
 					col = c(col[1], col[2]),
 					text.col = 'grey30',

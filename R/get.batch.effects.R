@@ -1,44 +1,48 @@
-get.batch.effects <- function(x, anno = NA, take.log, traits, sample.summary.stats) {
+get.batch.effects <- function(x, anno = NA, take.log, traits, sample.summary.stats, guess.cartridge = TRUE) {
 
 	# convert the traits to matrix
 	traits <- as.matrix(traits);
 	if ( is.null(colnames(traits)) ) colnames(traits) <- paste('col', 1:ncol(traits), sep = '');
 
-	# a best guess of how many cartridges are there.
-	cartridge.max <- floor(ncol(x)/12) + 1;
+	traits <- traits[,!grepl('pair.ids',colnames(traits)),drop=FALSE];
 
-	# create a design matrix that has dummy traits for each cartridge vs the rest.  do not create if there is already a supplied cartridge variable
-	if ( all(!grepl('[Cc]artridge', colnames(traits))) & cartridge.max > 1 ) {
+	if (guess.cartridge) {
+		# a best guess of how many cartridges are there.
+		cartridge.max <- floor(ncol(x)/12) + 1;
 
-		# create dummy matrix to hold the values
-		cartridge.id <- rep(1:cartridge.max, each = 12)[1:ncol(x)];
-		cartridge.design.matrix <- matrix(
-			data = 1, 
-			nrow = ncol(x), 
-			ncol = cartridge.max,
-			dimnames = list(colnames(x), paste('cartridge',1:cartridge.max,sep='')) 
-			);
+		# create a design matrix that has dummy traits for each cartridge vs the rest.  do not create if there is already a supplied cartridge variable
+		if ( all(!grepl('cartridge', colnames(traits),ignore.case=TRUE)) & cartridge.max > 1 ) {
 
-		# assign values to each cartridge variable
-		cartridge.remove <- NULL;
-		for (i in 1:cartridge.max) {
-			if ( sum(cartridge.id == i) < 6 ) {
-				cartridge.remove <- c(cartridge.remove, i);
+			# create dummy matrix to hold the values
+			cartridge.id <- rep(1:cartridge.max, each = 12)[1:ncol(x)];
+			cartridge.design.matrix <- matrix(
+				data = 1, 
+				nrow = ncol(x), 
+				ncol = cartridge.max,
+				dimnames = list(colnames(x), paste('cartridge',1:cartridge.max,sep='')) 
+				);
+
+			# assign values to each cartridge variable
+			cartridge.remove <- NULL;
+			for (i in 1:cartridge.max) {
+				if ( sum(cartridge.id == i) < 6 ) {
+					cartridge.remove <- c(cartridge.remove, i);
+					}
+				cartridge.design.matrix[cartridge.id == i, i] <- 2;
 				}
-			cartridge.design.matrix[cartridge.id == i, i] <- 2;
-			}
 
-		# remove cartridge variables if less that 3 counts
-		if ( !is.null(cartridge.remove) ) {
-			cartridge.design.matrix <- cartridge.design.matrix[,-cartridge.remove];
-			}
+			# remove cartridge variables if less that 3 counts
+			if ( !is.null(cartridge.remove) ) {
+				cartridge.design.matrix <- cartridge.design.matrix[,-cartridge.remove];
+				}
 
-		# add the cartridge variable to the traits matrix 
-		if ( all(dim(traits) == 1) ) {
-			traits <- cartridge.design.matrix;
-			}
-		else {
-			traits <- cbind(traits, cartridge.design.matrix);
+			# add the cartridge variable to the traits matrix 
+			if ( all(dim(traits) == 1) ) {
+				traits <- cartridge.design.matrix;
+				}
+			else {
+				traits <- cbind(traits, cartridge.design.matrix);
+				}
 			}
 		}
 

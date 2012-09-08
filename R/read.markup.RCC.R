@@ -37,8 +37,8 @@ read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude
 		count=count+1;
 		}
 
-	rcc.header.merged[3,1] <- "sampleID";
-	rcc.header.merged[9,1] <- "laneID";
+	rcc.header.merged[3,1] <- "sample.id";
+	rcc.header.merged[9,1] <- "lane.id";
 	rownames(rcc.header.merged) <- rcc.header.merged[,1];
 	rcc.header.merged <- rcc.header.merged[,-1];
 

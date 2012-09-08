@@ -44,7 +44,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \maketitle
 \tableofcontents
 %\listoffigures
-\newpage
+\clearpage
 %------------------------------------------------------------
 % set R defaults
 %------------------------------------------------------------
@@ -303,6 +303,17 @@ NanoString.mRNA.norm <- NanoStringNorm(
 
 There are a number of descriptive, diagnostic and results plots.  The following code snippets show how to generate them.
 
+<<eg.static.plots.0, eval=TRUE,echo=FALSE, fig=FALSE>>=
+# plot all the plots for use in figures
+pdf("NanoStringNorm_Example_Plots_%03d.pdf", onefile=FALSE);
+Plot.NanoStringNorm(
+	x = NanoString.mRNA.norm,
+	label.best.guess = TRUE,
+	plot.type = 'all'
+	);
+dev.off();
+@
+
 <<eg.static.plots.1, eval=FALSE>>=
 # plot all the plots as PDF report
 pdf('NanoStringNorm_Example_Plots_All.pdf');
@@ -357,116 +368,112 @@ Plot.NanoStringNorm(
 dev.off();
 @
 
-\newpage
+\clearpage
 
 What is the distribution of gene expression?  Existing or potential Housekeeping genes should have modest to high expression with very low variation.  Estimates of the standard deviation of genes can be used for power calculations.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_001.png}  
-\caption{\label{NSN.mean.sd}%
-The mean vs. the standard deviation.  
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_001.pdf}  
+\caption{The mean vs the standard deviation.  Green dots are endogenous genes and orange are controls, with the symbol indicating the specific type.  The grey line is a best fit loess curve through the data.  Generally, good housekeeping genes should have high mean and low sd i.e. bottom right of plot.}
+\label{NSN.mean.sd}%
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
 A comparison of global gene level variation pre- and post-normalization.  The post-normalization curve should be shifted to the left if the method is properly accounting for technical variation.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_002.png}  
-\caption{\label{NSN.cv}%
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_002.pdf}  
 Global gene level variation before and after normalization.
-}
+\caption{Global gene level variation before and after normalization.}
+\label{NSN.cv}
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
 Is there differential expression in design traits?  Do you see known or expected signals among biologically relevant contrasts?  Are there any profiles associated with biological covariates such as age, gender, trx, ethnicity, or bmi?  Including these traits as covariates in a model could dampen any true positive signal if the same genes are associated with the outcome.  Conversely, not including the traits could result in confounded results.  Models should be evaluated carefully.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_003.png}  
-\caption{\label{NSN.volcano.strain1}%
-Volcano plot of Rat strain 1 vs. all other rats.  The y-axis is -log10 p-values and the x-axis is fold change.  The size of the points is related to mean expression and the orange colour indicates fold change less than negative two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_003.pdf}  
+\caption{Volcano plot of Rat strain 1 vs. all other rats.  The y-axis is -log10 p-values and the x-axis is fold change.  The size of the points is related to mean expression and the orange colour indicates fold change less than negative two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.}
+\label{NSN.volcano.strain1}
 \end{center}\end{figure*}
 %
-\newpage
+\clearpage
 
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_004.png}  
-\caption{\label{NSN.volcano.strain2}%
-Volcano plot of Rat strain 2 vs. all other rats.  The y-axis is -log10 p-values and the x-axis is fold change.  The size of the points is related to mean expression and the orange colour indicates fold change greater than two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_004.pdf}  
+\caption{Volcano plot of Rat strain 2 vs. all other rats.  The y-axis is -log10 p-values and the x-axis is fold change.  The size of the points is related to mean expression and the orange colour indicates fold change greater than two.  The two dashed horizontal lines are drawn at p-value = 0.05 and a Bonferroni corrected level.}
+\label{NSN.volcano.strain2}
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
 Are there any samples with many missing values?  Missing values could be caused by a technical failure or as a result of too little input material.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_006.png}  
-\caption{\label{NSN.missing}%
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_006.pdf}  
+\caption{Proportion of missing values vs. mean expression by sample.}
+\label{NSN.missing}
 Proportion of missing values vs. mean expression by sample.
-}
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
 In normalizing for sample content you can use Housekeeping genes or an aggregate score of a larger set of non-Housekeeping genes.  Under ideal conditions, both methods should be equivalent.  Samples with large deviations from the best fit line should be investigated.  When looking at miRNA code sets a large difference could reflect contamination by ligation inhibitors.  All the miRNA genes undergo ligation, however the mRNA housekeeping genes do not.  If inhibitors are present, this could also affect levels of the other controls and consequently magnify inter-sample differences.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_007.png}  
-\caption{\label{NSN.RNA.estimates}%
-Estimates of input RNA or sample content.  The x-axis is the RNA estimate for each sample based on the top 75 expressed genes, and the y-axis is the RNA estimate using housekeeping genes.
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_007.pdf}  
+\caption{Estimates of input RNA or sample content.  Each point represents a sample.  The x-axis is the RNA estimate for each sample based on the geometric mean of the top 75 expressed genes, and the y-axis is the RNA estimate based on the geometric mean housekeeping genes.}
+\label{NSN.RNA.estimates}
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
-\textit{Correlation of technical covariates with summary gene features.}  If still present after normalization, correlation could indicate residual technical variation or batch effects.  This could be problematic if the study has an unbalanced design, which could result in a gene vs. trait model being confounded by a third technical covariate.  For example, cartridge 1 has a high mean expression level and it contains a large proportion of females.  Looking for differential expression between males and females will be confounded by females being over represented on an outlier cartridge.  In some instances a correlation of design covariate with a summary gene feature could be indicative of the hidden biological substructure in the data.  Biological rationale for observed technical relationships is preferred if possible.  For example, the last cartridge in your dataset is associated with low RNA content and elevated levels of missing values.  You go back and check your lab notes and realize that you prioritized samples based on quality/quantity for running on the nCounter, so all the poor samples were left to the end.
+\textit{Correlation of technical covariates with summary gene features.}  If still present after normalization, correlation could indicate residual technical variation or batch effects.  This could be problematic if the study has an unbalanced design, which could result in a gene vs. trait model being confounded by a third technical covariate.  For example, cartridge 1 has a high mean expression level and it contains a large proportion of females.  Looking for differential expression between males and females will be confounded by females being over represented on an outlier cartridge.  
+
+In some instances a correlation of design covariate with a summary gene feature could be indicative of the hidden biological substructure in the data.  Biological rationale for observed technical relationships is preferred if possible.  For example, the last cartridge in your dataset is associated with low RNA content and elevated levels of missing values.  You go back and check your lab notes and realize that you prioritized samples based on quality/quantity for running on the nCounter, so all the poor samples were left to the end.
+
+These correlations can be described as batch effects and can be somewhat tricky to identify due to wide variations in experimental design and codesets.  Generally, a batch effect is the situation when there is a systematic technical bias that normalization ignores or inadvertantly exacerbates.  The following plots try and identify these situations by showing how sample level summaries (i.e. mean of positive controls) are a associated with specified traits or technical features.  Mean, SD and missing are generally related to the biology and therefore are mostly descriptive.  The sample level summaries for the controls, however should be in most cases, independent of features of the data.  Therefore, any significant difference could be an observed bias.  Normalization will take care of minor fluctuations but large differences i.e. large green dots should be flagged or at least reconciled.  For example, if one biologial subgroup of interest (i.e. tumour tissue vs normal tissue) has much higher RNA content than the other, then the resulting normalization factor could over-correct and end up actually removing the true signal.  Similarly, if cartridges, dates, or scanners have different levels of positive controls then the standard normalization techniques are unlikely to fully compensate resulting in bias when evaluating differential expression.
 \\ \\
 \textit{Correlation of biological covariates with summary gene features.}  While not strictly `batch effects', any association could introduce a bias.  For example, a large proportion of your tumour samples have high levels of missing values.  This could be biologically plausible, or it could reflect a technical artifact (e.g. the tumour samples were taken from very old and degraded FFPE blocks).
 
-\newpage
+\clearpage
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_008.png}  
-\caption{\label{NSN.batch.effects}%
-Batch effects and potential confounding.  The x-axis lists binary traits and design variables.  The y-axis is the difference between the two categories for the specified sample summary feature.
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_008.pdf}  
+\caption{Batch effects and potential confounding.  The x-axis lists binary traits and design variables.  The y-axis is the difference between between the two levels of the trait for the specified sample summary feature.  Usually, the trait label on the x-axis reflects the group being compared. i.e. strain1 vs the rest or cartridge2 vs the rest.  Sample summaries can be mean counts, sd, proportion of missing (0 counts) or related to the controls probes.  The location of the dots relative to the horizontal line show how different that group is relative to the rest.  Green dots indicate that the difference is signicant based on a t-test and the size is proportional to the level of significance.  For example strain2 (column 2) has a much larger mean count than all the other strains and also significantly less missing.  Note that summaries for the controls are generated sequentially according to what was specified in the NanoStringNorm call.  Therefore, the summarization of the PositiveControls is based on the raw counts while the RNA Content is based on the data adjusted for Positive and Negative controls.}
+\label{NSN.batch.effects}
 \end{center}\end{figure*}
-%
+\clearpage
 
-\newpage
-
-It is important to review the quality and quantity of the normalization factors for control probes.  Individual or groups of samples that are outliers could influence the normalization.  For example if a sample has a very low estimate of RNA content, then the resulting normalization factor could over-correct and end up contributing unexpected variation.  Samples extending beyond 100\%\ are annotated for being potential outliers.
+It is important to review the quality and quantity of the normalization factors.  The batch effects above show how these factors relate to groups of samples, while in contrast, the normalization factors plot shows these summaries at the sample level.  A perceived batch effect could be the result of one or two outlier or influential samples.  Samples that fluctuate beyond 100\%\ from the mean are labelled for review.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_009.png}  
-\caption{\label{NSN.norm.factors}%
-Barplot of normalization factors used to correct the data.  For each sample the CodeCount (positive controls), Background (negative controls) and RNA sample content (housekeeping) normalization parameter is expressed as percent difference from the mean. 
-}
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_009.pdf}  
+\caption{Barplot of normalization factors used to correct the data.  For each sample the CodeCount (positive controls), Background (negative controls) and RNA sample content (housekeeping) normalization parameter is expressed as percent difference from the mean.  Samples extending beyond 100\%\ are annotated for being potential outliers.  Any sample or group of samples that have very high or low bars could be influential outliers. }
+\label{NSN.norm.factors}
 \end{center}\end{figure*}
 %
-\newpage
+\clearpage
 
 The following show the distribution of the observed versus expected positive and negative controls.  The negative controls should be tightly clustered and the positive controls should show a strong linear trend.  If any sample has a slope or intercept that strongly deviates from other samples then it should be used carefully.  If any sample is flagged for any reason then these plots are a good place to start in the diagnostic process.
 
 \begin{figure*}[h]\begin{center}
-\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_010.png}  
+\includegraphics[width=0.9\textwidth]{NanoStringNorm_Example_Plots_010.pdf}  
 \caption{\label{NSN.postive.controls}%
 Scatterplot of positive and negative control counts.  The green points show the expected concentration in fM of spiked in positive controls vs. the observed normalized counts.  A best fit line is added where the intercept reflects sensitivity.  Orange dots represent the negative controls. 
 }
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 %------------------------------------------------------------
 \section{Interactive Plotting}\label{sec:interactive.plotting}
 %------------------------------------------------------------
@@ -475,7 +482,7 @@ A set of Google Motion charts can be produced based on functionality in the \Rpa
 \\ \\
 By default the plots are rendered in your browser using a built in web server.  For distribution and later use you will need to save the resulting html files.  The use of a web server is required to display the results, and therefore the program attempts to download \emph{mongoose} embedded web server \url{http://code.google.com/p/mongoose/} (License MIT).  After starting the binary/executable you can access the plots at \url{http://127.0.0.1:8080}.
 
-\newpage
+\clearpage
 The first example displays the plots in your browser the second saves them for later use.
 
 
@@ -516,8 +523,8 @@ A screen capture of the interactive Google chart for samples.  Axis, colour and 
 }
 \end{center}\end{figure*}
 %
-\newpage
-\newpage
+\clearpage
+\clearpage
 
 %------------------------------------------------------------
 \section{Best Normalization Method}\label{sec:method.comparison}
@@ -571,7 +578,7 @@ A histogram of ICC for all possible normalization methods on the rat strain data
 \end{center}\end{figure*}
 %
 
-\newpage
+\clearpage
 
 
 %------------------------------------------------------------

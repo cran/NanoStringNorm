@@ -1,4 +1,26 @@
-NanoStringNorm 1.1.10
+NanoStringNorm 1.1.11 2012-10-01
+----------------------------------------------------------------
+
+MINOR FEATURES
+
+* added parameter "guess.cartridges" in NanoStringNorm function.  Cartridge estimates can be estimated from sample order and used in batch effect estimates
+* in Plot.NanoStringNorm the control types have different symbols
+* added some text to better describe the figures.  also replaced the png with pdf for better resolution
+* made it so you can add manual and auto labels at the same time
+* added options label.n to specify the number of outliers to plot and label.as.legend to allow the labels to be written as a legend to avoid messy overlaps
+* output FDR qvalues
+
+BUG FIXES
+
+* Plot.NanoStringNorm had a missing curly brace and forgotten browser statement
+* Shifted labels on positive.control plot to avoid overlap if long
+* Added regex for positive control names in cv plot, probe.correction function and norm.comp.  sometimes the positive controls are named differently causing them to be missed during calculations
+* Fixed volcano plot label to show log2 Fold-Change if log taken
+* Fixed volcano plot y-axis break.  the xlim was not getting set properly
+* Fixed norm.factor plot positions when only one plot
+* changed low.cv.geo.mean method to better find low cv genes 
+
+NanoStringNorm 1.1.10 2012-09-01
 ----------------------------------------------------------------
 
 MINOR FEATURES

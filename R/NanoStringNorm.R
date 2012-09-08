@@ -1,4 +1,4 @@
-NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', round.values = FALSE, is.log = FALSE, take.log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, ...) {
+NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', round.values = FALSE, is.log = FALSE, take.log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, guess.cartridge = TRUE, ...) {
 
 	# check if the data is a list, matrix, or data.frame
 	if ( !(is.list(x) | is.data.frame(x) | is.matrix(x)) ) {
@@ -211,7 +211,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 	check.traits <- NanoStringNorm:::check.trait.values(x, anno, traits = traits);
 
 	# get batch effects or trait vs normalization factor associations
-	batch.effects <- NanoStringNorm:::get.batch.effects(x, anno, take.log = take.log, traits = traits, sample.summary.stats = sample.summary.stats);
+	batch.effects <- NanoStringNorm:::get.batch.effects(x, anno, take.log = take.log, traits = traits, sample.summary.stats = sample.summary.stats, guess.cartridge = guess.cartridge);
 
 	# get trait summary stats
 	if (check.traits == 1) {

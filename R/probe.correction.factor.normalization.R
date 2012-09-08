@@ -132,7 +132,7 @@ probe.correction.factor.normalization <- function(x, anno, Probe.Correction.Fact
 		}
 
 	# adjust for probe level background correction
-	Probe.Correction.Factor <- sapply(X = x[anno$Name == 'POS_A(128)',], FUN = '*', Probe.Correction.Factor);
+	Probe.Correction.Factor <- sapply(X = x[anno$Name %in% c('POS_A(128)','POS_A'),], FUN = '*', Probe.Correction.Factor);
 	x <- x - as.matrix(as.data.frame(Probe.Correction.Factor));
 	x[x < 0] <- 0;
 

@@ -21,6 +21,7 @@ NanoStringNorm(
 	verbose = TRUE,
 	genes.to.fit,
 	genes.to.predict,
+	guess.cartridge = TRUE,
 	...
 	);
 }
@@ -42,6 +43,7 @@ NanoStringNorm(
   \item{verbose}{Output comments on run-status}
   \item{genes.to.fit}{The set of genes used to generate the normalization parameters.  You can specify a vector of code classes or gene names as indicated in the annotation.  Alternatively, you can use descriptors such as 'all', 'controls', 'endogenous'.  For most methods the model will be fit and applied to the endogenous genes.  In some cases such as vsn you may want to vary this approach.}
   \item{genes.to.predict}{The set of genes that the parameters or model is applied to.}
+  \item{guess.cartridge}{Should the cartridge be estimated based on the order of the samples.}
   \item{...}{The ellipses are included to allow flexible use of parameters that are required by OtherNorm methods.  For example the use of \emph{strata or calib} parameters documented in the vsn package.  }
 }
 \details{

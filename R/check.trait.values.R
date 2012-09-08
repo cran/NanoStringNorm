@@ -6,7 +6,7 @@ check.trait.values <- function(x, anno = NA, traits = NA) {
 		}
 
 	# attempt to convert traits into a matrix
-	traits <- as.matrix(traits);
+	traits <- as.matrix(traits[,!colnames(traits) %in% 'pair.ids',drop = FALSE]);
 
 	# if a vector add a dummy colname
 	if ( is.null(colnames(traits)) ) {

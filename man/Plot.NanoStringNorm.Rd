@@ -9,7 +9,9 @@ Plot.NanoStringNorm(
 	samples = NA,
 	genes = NA,
 	label.best.guess = TRUE,
-	label.ids = NA,
+	label.ids = list(),
+	label.as.legend = TRUE,
+	label.n = 10,
 	title = TRUE,
 	col = NA
 	);
@@ -21,8 +23,10 @@ Plot.NanoStringNorm(
   \item{samples}{List of samples to use.  Not yet implemented.}
   \item{genes}{List of genes to use.  Not yet implemented.}
   \item{label.best.guess}{Labels will automatically be added for samples and genes that are either outliers (~3sd from mean) or the most significant.  The default is TRUE.}
-  \item{label.ids}{Explicitly label points.  To use this feature supply a list with with two elements named genes and samples.  By default this is set to NA.}
+  \item{label.ids}{Explicitly label points.  To use this feature supply a list with with two elements named genes and samples.  By default this is set to NA.  Note that you can add manual and auto labels at the same time.}
   \item{title}{Should the plot titles be included.  By default they are included but this can be turned off if generating plots for publication or presentation.}
+  \item{label.as.legend}{Should the points be labelled using a legend or directly.  The legend tends to be more clear when there are number of overlapping positions.  Only volcano plots implemented currently.}
+  \item{label.n}{How many points to be chosen for labelling.  Only volcano plots implemented currently.}
   \item{col}{Alternate colours for plotting.  Input should be a vector of two rgb values.  The default colours are orange and green.}
 }
 \value{
