@@ -603,18 +603,20 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 					col = batch.col,
 					xlab = sample.statistic,
 					ylim = c(-max(abs(batch.diff)),max(abs(batch.diff))),
-					main = if (title == TRUE) sample.statistic else NA,
+					#main = if (title == TRUE) sample.statistic else NA,
+					main = sample.statistic,
 					xaxt = 'n'
 					);
 
 				axis(1, at = 1:n.traits, labels = NA, col.axis = 'grey30');
-				
+				size.x.labels <- ifelse(max(nchar(as.character(trait.names))>10),.7,1);
+
 				if (length(trait.names) > 10) {
 					if (sample.statistic == 'Missing' | sample.statistic == 'RNA Content') {
 						if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
-						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
+						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4.5);
 						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2.3, las = 0);
-						axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3);
+						axis(1, at = 1:n.traits, labels = trait.names, col.axis = 'grey30', las = 3, cex.axis=size.x.labels);
 						}
 					}
 				else{
@@ -623,7 +625,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 						}
 					if (sample.statistic == 'Missing') {
 						if (title == TRUE) mtext('Sample: Batch Effects', side = 3, cex = 2, col = 'grey30', outer = TRUE, line = .8);
-						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4);
+						mtext('Trait', side = 1, cex = 1.5, col = 'grey30', outer = TRUE, line = 4.5);
 						mtext('Mean of Group2 relative to Group1', side = 2, cex = 1.5, col = 'grey30', outer = TRUE, line = 2, las = 0);
 						}
 					}

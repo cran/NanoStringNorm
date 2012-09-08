@@ -40,15 +40,17 @@ read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 		);
 
 	if (is.null(header)) {
-		stop("READ.XLS.RCC: There appears to be a problem with RCC file.");
+		stop("READ.XLS.RCC: There appears to be a problem with RCC file.  No header found.");
 		}
 
 	rownames(header) <- gsub(" $", "", rownames(header));
 	rownames(header) <- gsub(" ", ".", rownames(header));
 	rownames(header) <- tolower(rownames(header));
+	if ("id" %in% rownames(header)) {rownames(header)[rownames(header) == "id"] <- "sample.id"}
+
 
 	if (!all(c("file.name", "sample.id", "binding.density") %in% rownames(header)))  {
-		stop("READ.XLS.RCC: There appears to be a problem with RCC file.");
+		stop("READ.XLS.RCC: There appears to be a problem with RCC file.  Rownames in header are missing File name , Sample id, Binding density");
 		}
 
 	# parse the header

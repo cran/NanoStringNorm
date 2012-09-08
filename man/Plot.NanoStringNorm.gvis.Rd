@@ -8,7 +8,7 @@
          plot.type = c('gene.norm', 'sample'),
          save.plot = FALSE,
          path.to.mongoose = 'web',
-	 output.directory = 'NanoStringNorm_gvis_plots' 
+         output.directory = 'NanoStringNorm_gvis_plots' 
          );
  
  }
@@ -73,6 +73,7 @@
          );
  
  # plot the sample summaries to your browser
+ if (require(googleVis)) \{
  Plot.NanoStringNorm.gvis(
          x = NanoString.mRNA.norm,
          plot.type = c('gene.norm', 'sample'),
@@ -87,7 +88,7 @@
          path.to.mongoose = 'none',
          output.directory = "NanoStringNorm_Interactive_Plot"
          );
- 
+ \}
  }
  \author{Daryl M. Waggott}
  

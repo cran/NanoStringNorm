@@ -109,11 +109,11 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm", "sample"), sa
 					file.copy(from = paste(path.to.mongoose, "/mongoose.exe"), to = output.directory);
 					}
 				else {
-					cat("Plot.NanoStringNorm: No windows mongoose binary found.");
+					cat("Plot.NanoStringNorm: No windows mongoose binary found.\n");
 					}
 				}
 			else {
-				cat("Plot.NanoStringNorm: No mongoose binary found.  You will need to either download this or \n\t use an alternate method to display the interactive googleVis plots in the future.");
+				cat("Plot.NanoStringNorm: No mongoose binary found.  You will need to either download this or \n\t use an alternate method to display the interactive googleVis plots in the future.\n");
 				}
 
 			# Create Google Gadget
@@ -125,6 +125,10 @@ Plot.NanoStringNorm.gvis <- function(x, plot.type = c("gene.norm", "sample"), sa
 			cat("Plot.NanoStringNorm.gvis: First run the mongoose binary found in the NanoStringNorm_gvis_plots and \n\t then navigate to http://127.0.01:8080 in your browser to view the plots\n");
 			}
 		else {
+
+			# resets the browser setting
+			if (getOption("browser") == "/usr/bin/open" | getOption("browser") == "") options(browser = "xdg-open");
+
 			# plot using internal R webserver
 			plot(plot.merge);
 			}
