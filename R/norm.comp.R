@@ -1,3 +1,14 @@
+# The NanoStringNorm package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
+# This package and its accompanying libraries is free software; you can redistribute it and/or modify it under the terms of the GPL
+# (either version 1, or at your option, any later version) or the Artistic License 2.0.  Refer to LICENSE for the full license text.
+# OICR makes no representations whatsoever as to the SOFTWARE contained herein.  It is experimental in nature and is provided WITHOUT
+# WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE OR ANY OTHER WARRANTY, EXPRESS OR IMPLIED. OICR MAKES NO REPRESENTATION
+# OR WARRANTY THAT THE USE OF THIS SOFTWARE WILL NOT INFRINGE ANY PATENT OR OTHER PROPRIETARY RIGHT.
+# By downloading this SOFTWARE, your Institution hereby indemnifies OICR against any loss, claim, damage or liability, of whatsoever kind or
+# nature, which may arise from your Institution's respective use, handling or storage of the SOFTWARE.
+# If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
+# credit be given to OICR scientists, as scientifically appropriate.
+
 norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE, icc.method = "mixed") { 
 
 	if (!require("lme4")) {
@@ -171,7 +182,10 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 						# remove genes with lots of missing
 						missing.gt90pc <- missing.pc > .90;
 
-						if (any(missing.gt90pc)) {
+						if (all(missing.gt90pc)) {
+							stop("norm.comp: all genes have greater than 90% missing.");
+							}
+						else if (any(missing.gt90pc)) {
 							data.nsn[missing.gt90pc,] <- NA;
 							}
 

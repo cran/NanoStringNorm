@@ -1,3 +1,14 @@
+# The NanoStringNorm package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
+# This package and its accompanying libraries is free software; you can redistribute it and/or modify it under the terms of the GPL
+# (either version 1, or at your option, any later version) or the Artistic License 2.0.  Refer to LICENSE for the full license text.
+# OICR makes no representations whatsoever as to the SOFTWARE contained herein.  It is experimental in nature and is provided WITHOUT
+# WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE OR ANY OTHER WARRANTY, EXPRESS OR IMPLIED. OICR MAKES NO REPRESENTATION
+# OR WARRANTY THAT THE USE OF THIS SOFTWARE WILL NOT INFRINGE ANY PATENT OR OTHER PROPRIETARY RIGHT.
+# By downloading this SOFTWARE, your Institution hereby indemnifies OICR against any loss, claim, damage or liability, of whatsoever kind or
+# nature, which may arise from your Institution's respective use, handling or storage of the SOFTWARE.
+# If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
+# credit be given to OICR scientists, as scientifically appropriate.
+
 sample.content.normalization <- function(x, anno, SampleContent = 'none', logged = FALSE, verbose = TRUE) {
 
 	# check if missing
@@ -54,9 +65,11 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 
 			low.cv.genes.rank.lt10 <- rank(gene.summary.stats[low.cv.genes,'CV'], ties.method = 'random') <= 10;
 
-			cat('SampleContent: The following genes have been chosen to adjust for RNA Content.\n\n');
-			print(data.frame("HK.Candidates" = rownames(x[low.cv.genes,][low.cv.genes.rank.lt10,])));
-			cat('\n');
+			if (verbose) {
+				cat('SampleContent: The following genes have been chosen to adjust for RNA Content.\n\n');
+				print(data.frame("HK.Candidates" = rownames(x[low.cv.genes,][low.cv.genes.rank.lt10,])));
+				cat('\n');
+				}
 
 			rna.content <- apply(
 				X = x[low.cv.genes,][low.cv.genes.rank.lt10,],
@@ -108,6 +121,20 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 
 		else {
 			stop('SampleContent: Unimplemented SampleContent method');
+			}
+
+		# handle cases where rna.content is estimated to be zero
+		if (any(rna.content < 1)) {
+
+			if (verbose) {
+				# print warning 
+				cat('SampleContent: The following samples have estimates of zero RNA content.  Consider removing them.\n\n');
+				print(names(rna.content[rna.content < 1]));
+				cat('\n');
+				}
+
+			# fudge rna.content to the expected minimum of 1.
+			rna.content[rna.content < 1] <- 1; 
 			}
 
 		# calc normalization factor

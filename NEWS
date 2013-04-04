@@ -1,3 +1,11 @@
+
+NanoStringNorm 1.1.14 2013-04-04
+----------------------------------------------------------------
+
+BUG FIXES
+
+* sample.content.norm.  added some error handling for cases where rna.content was estimated to be zero, resulting in normalization factors that were infinity and errors in norm.comp
+
 NanoStringNorm 1.1.12 2012-12-01
 ----------------------------------------------------------------
 
