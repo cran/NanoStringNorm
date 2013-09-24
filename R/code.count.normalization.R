@@ -30,7 +30,7 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE
 		pos.sample <- apply(
 			X = x[anno$Code.Class == 'Positive',],
 			MARGIN = 2, 
-			FUN = NanoStringNorm:::get.geo.mean,
+			FUN = get.geo.mean,
 			logged = logged
 			);
 		}

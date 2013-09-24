@@ -147,17 +147,17 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		}
 
 	# do Probe Correction Factor Normalization
-	output.probe.correction.factor <- NanoStringNorm:::probe.correction.factor.normalization(x, anno, Probe.Correction.Factor, verbose);
+	output.probe.correction.factor <- probe.correction.factor.normalization(x, anno, Probe.Correction.Factor, verbose);
 	anno <- output.probe.correction.factor$anno;
 	x <- output.probe.correction.factor$x;
 	rm(output.probe.correction.factor);
 
 	# get gene summary stats for raw data
-	gene.summary.stats.raw  <- NanoStringNorm:::get.gene.summary.stats(x, anno);
+	gene.summary.stats.raw  <- get.gene.summary.stats(x, anno);
 
 	# do CodeCount Normalization
 	if ( CodeCount %in% c('sum', 'geo.mean') ) {
-		output.code.count.normalization <- NanoStringNorm:::code.count.normalization(x, anno, CodeCount = CodeCount, logged = is.log, verbose = verbose);
+		output.code.count.normalization <- code.count.normalization(x, anno, CodeCount = CodeCount, logged = is.log, verbose = verbose);
 		x <- output.code.count.normalization$x;
 		pos.norm.factor <- output.code.count.normalization$pos.norm.factor;
 		pos.sample <- output.code.count.normalization$pos.sample;
@@ -166,7 +166,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do Background Correction Normalization
 	if ( Background %in% c('mean', 'mean.2sd', 'max') ) {
-		output.background.normalization <- NanoStringNorm:::background.normalization(x, anno, Background = Background, verbose = verbose);
+		output.background.normalization <- background.normalization(x, anno, Background = Background, verbose = verbose);
 		x <- output.background.normalization$x;
 		background.level <- output.background.normalization$background.level;
 		rm(output.background.normalization);
@@ -174,7 +174,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do Sample Content Normalization
 	if ( SampleContent %in% c('housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean', 'top.geo.mean', 'low.cv.geo.mean') ) {
-		output.sample.content.normalization <- NanoStringNorm:::sample.content.normalization(x, anno, SampleContent = SampleContent, logged = is.log, verbose = verbose);
+		output.sample.content.normalization <- sample.content.normalization(x, anno, SampleContent = SampleContent, logged = is.log, verbose = verbose);
 		x <- output.sample.content.normalization$x;
 		sampleContent.norm.factor <- output.sample.content.normalization$sampleContent.norm.factor;
 		rna.content <- output.sample.content.normalization$rna.content;
@@ -182,15 +182,15 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		}
 	# do other additional normalizations.  note these are applied to all endogenous probes but excluding counts equal to 0
 	if ( OtherNorm %in% c('quantile', 'zscore', 'rank.normal', 'vsn') ) {
-		x <- NanoStringNorm:::other.normalization(x = x, anno = anno, OtherNorm = OtherNorm, verbose = verbose, genes.to.fit, genes.to.predict);
+		x <- other.normalization(x = x, anno = anno, OtherNorm = OtherNorm, verbose = verbose, genes.to.fit, genes.to.predict);
 		}
 
 	# do rounding, log-transformation
-	x <- NanoStringNorm:::output.formatting(x, anno, OtherNorm = OtherNorm, round.values = round.values, is.log = is.log, take.log = take.log, verbose = verbose);
+	x <- output.formatting(x, anno, OtherNorm = OtherNorm, round.values = round.values, is.log = is.log, take.log = take.log, verbose = verbose);
 	
 	# get predicted concentration based on positive controls
 	if (predict.conc == TRUE) { 
-		predicted.concentration <- NanoStringNorm:::predict.concentration(x, anno, is.log, take.log, verbose);
+		predicted.concentration <- predict.concentration(x, anno, is.log, take.log, verbose);
 		}
 	else {
 		predicted.concentration <- NA;
@@ -202,7 +202,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		}
 
 	# get sample summary stats
-	sample.summary.stats <- NanoStringNorm:::get.sample.summary.stats(x, anno); 
+	sample.summary.stats <- get.sample.summary.stats(x, anno); 
 
 	# add the normalization factors to the sample summary stats
 	sample.summary.stats <- cbind(
@@ -216,17 +216,17 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 		);
 
 	# get gene summary stats for normalized data
-	gene.summary.stats.norm <- NanoStringNorm:::get.gene.summary.stats(x, anno);
+	gene.summary.stats.norm <- get.gene.summary.stats(x, anno);
 
 	# check that trait data is the right format
-	check.traits <- NanoStringNorm:::check.trait.values(x, anno, traits = traits);
+	check.traits <- check.trait.values(x, anno, traits = traits);
 
 	# get batch effects or trait vs normalization factor associations
-	batch.effects <- NanoStringNorm:::get.batch.effects(x, anno, take.log = take.log, traits = traits, sample.summary.stats = sample.summary.stats, guess.cartridge = guess.cartridge);
+	batch.effects <- get.batch.effects(x, anno, take.log = take.log, traits = traits, sample.summary.stats = sample.summary.stats, guess.cartridge = guess.cartridge);
 
 	# get trait summary stats
 	if (check.traits == 1) {
-		trait.summary.stats <- NanoStringNorm:::get.trait.summary.stats(x, anno, logged = (is.log | take.log), traits = traits);
+		trait.summary.stats <- get.trait.summary.stats(x, anno, logged = (is.log | take.log), traits = traits);
 
 		# add the trait summary statistics to the gene summary stats
 		gene.summary.stats.norm <- cbind(

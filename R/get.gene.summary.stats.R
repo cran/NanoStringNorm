@@ -14,7 +14,7 @@ get.gene.summary.stats <- function(x, anno = NA) {
 	gene.summary.stats <- apply(
 		X = x,
 		MARGIN = 1,
-		FUN = NanoStringNorm:::get.mean.sd.and.cv
+		FUN = get.mean.sd.and.cv
 		);
 
 	gene.summary.stats <- t(gene.summary.stats);

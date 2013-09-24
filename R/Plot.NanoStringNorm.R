@@ -499,13 +499,13 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 		RNA.hk <- apply(
 			X = x$raw.data[grepl('[Hh]ousekeeping',x$raw.data$Code.Class), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
 			MARGIN = 2,
-			FUN = NanoStringNorm:::get.geo.mean
+			FUN = get.geo.mean
 			);
 
 		RNA.top <- apply(
 			X = x$raw.data[grepl('[Ee]ndogenous',x$raw.data$Code.Class) & x$gene.summary.stats.norm$Mean > quantile(x$gene.summary.stats.norm$Mean,.8), !colnames(x$raw.data) %in% c('Code.Class','Name', 'Accession')],
 			MARGIN = 2,
-			FUN = NanoStringNorm:::get.geo.mean
+			FUN = get.geo.mean
 			);
 
 		# plot a scatterplot of the points

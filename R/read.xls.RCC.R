@@ -11,11 +11,6 @@
 
 read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 
-	# double check gdata is loaded
-	if (!require(gdata)) {
-		stop("READ.XLS.RCC: gdata package is not loaded or available");
-		}
-
 	# check if perl exists
 	if ( length(Sys.which("perl")) == 0 ) {
 		stop(paste("READ.XLS.RCC: Perl was not found in you're PATH.  Is it installed?  \n\tIf it is add it to you're PATH variable or specify the location in the 'perl' argument  \n", xls)) ;

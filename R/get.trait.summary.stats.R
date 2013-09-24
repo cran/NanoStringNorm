@@ -36,7 +36,7 @@ get.trait.summary.stats <- function(x, anno = NA, logged, traits) {
 		trait.summary <- apply(
 			X = x,
 			MARGIN = 1,
-			FUN = NanoStringNorm:::get.ttest.and.foldchange,
+			FUN = get.ttest.and.foldchange,
 			group1 = (trait.value == 1),
 			group2 = (trait.value == 2),
 			logged = logged,

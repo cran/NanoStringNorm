@@ -112,7 +112,8 @@ png('NanoStringNorm_Example_Plots_\%03d.png', units = 'in',  height = 6,
 Plot.NanoStringNorm(
 	x = NanoString.mRNA.norm,
 	label.best.guess = TRUE,
-	plot.type = c('cv','mean.sd','RNA.estimates','volcano','missing','norm.factors','positive.controls','batch.effects')
+	plot.type = c('cv','mean.sd','RNA.estimates','volcano','missing','norm.factors',
+		'positive.controls','batch.effects')
 	);
 dev.off()
 

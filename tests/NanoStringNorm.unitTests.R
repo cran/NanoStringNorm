@@ -10,5 +10,6 @@
 # credit be given to OICR scientists, as scientifically appropriate.
 
 require("NanoStringNorm") || stop("unable to load NanoStringNorm package")
-NanoStringNorm:::.test()
-
+if (require(RUnit)) {
+	NanoStringNorm:::.test()
+	}

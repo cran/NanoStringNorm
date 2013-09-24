@@ -37,7 +37,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rna.content <- apply(
 				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'), ], 
 				MARGIN = 2, 
-				FUN = NanoStringNorm:::get.geo.mean,
+				FUN = get.geo.mean,
 				logged = logged
 				);
 			}
@@ -55,7 +55,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 		else if (SampleContent == 'low.cv.geo.mean') {
 
 		# get a list of expressed stable genes
-			gene.summary.stats  <- as.data.frame(NanoStringNorm:::get.gene.summary.stats(x, anno));
+			gene.summary.stats  <- as.data.frame(get.gene.summary.stats(x, anno));
 			low.cv.genes <- (
 				grepl('endogenous|housekeeping|control', anno$Code.Class, ignore.case=TRUE) & 
 #				gene.summary.stats$Mean > 10 & 
@@ -74,7 +74,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rna.content <- apply(
 				X = x[low.cv.genes,][low.cv.genes.rank.lt10,],
 				MARGIN = 2, 
-				FUN = NanoStringNorm:::get.geo.mean,
+				FUN = get.geo.mean,
 				logged = logged
 				);
 			}
@@ -114,7 +114,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rna.content <- apply(
 				X = x[endogenous.genes,][rank.rna <= 75,],
 				MARGIN = 2,
-				FUN = NanoStringNorm:::get.geo.mean,
+				FUN = get.geo.mean,
 				logged = logged
 				);
 			}

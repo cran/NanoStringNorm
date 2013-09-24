@@ -18,7 +18,8 @@ Returns a list with two components.  The first is the header information which c
 \examples{
  
 # directly import the nCounter output
-path.to.xls.file <- system.file("extdata", "RCC_files", "RCCCollector1_rat_tcdd.xls", package = "NanoStringNorm");
+path.to.xls.file <- system.file("extdata", "RCC_files", "RCCCollector1_rat_tcdd.xls",
+	package = "NanoStringNorm");
 NanoString.mRNA <- read.xls.RCC(x = path.to.xls.file, sheet = 1);
 
 }

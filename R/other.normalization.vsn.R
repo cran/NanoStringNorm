@@ -17,7 +17,7 @@ other.normalization.vsn <- function(x, anno, OtherNorm = 'none', verbose = TRUE,
 
 	# do not proceed if vsn cannot be loaded
 	if (!require(vsn)) {
-		stop ("OtherNorm.vsn:  VSN is not available.");
+		stop("OtherNorm.vsn:  VSN is not available.");
 		}
 
 	# parse the genes.to.fit options

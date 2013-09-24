@@ -3,7 +3,11 @@
 \alias{read.markup.RCC}
 \description{A function to read and merge a set of sample specific RCC markup files.}
 \usage{
-read.markup.RCC(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude = NULL, include = NULL)
+read.markup.RCC(
+ rcc.path = ".",
+ rcc.pattern = "*.RCC|*.rcc",
+ exclude = NULL, 
+ include = NULL)	
 }
 \arguments{
   \item{rcc.path}{The directory of the rcc files. Defaults to current working directory.}

@@ -3,7 +3,14 @@
 \alias{other.normalization}
 \description{This function can be used to normalize mRNA and miRNA expression data from the NanoString platform.}
 \usage{
-other.normalization(x, anno, OtherNorm = 'none', verbose = TRUE, genes.to.fit, genes.to.predict, ...);
+other.normalization(
+ x,
+ anno,
+ OtherNorm = 'none',
+ verbose = TRUE,
+ genes.to.fit,
+ genes.to.predict,
+ ...);
 }
 \arguments{
   \item{x}{The data used for Normalization.  This is typically the raw expression data as exported from an Excel spreadsheet.  If anno is NA then the first three columns must be \emph{c('Code.Class', 'Name', 'Accession')} and the remaining columns refer to the samples being analyzed.  The rows should include all control and endogenous genes.}
@@ -52,24 +59,31 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	);
 
 
-# inverse normal transformation. use quantiles to transform each sample to the normal distribution
+# inverse normal transformation. use quantiles to transform each sample to 
+# the normal distribution
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
 	OtherNorm = 'rank.normal',
 	return.matrix.of.endogenous.probes = TRUE
 	);
 
-# quantile normalization.  create an empirical distribution based on the median gene counts at the same rank across sample.  then transform each sample to the empirical distribution.
+# quantile normalization.  create an empirical distribution based on the 
+# median gene counts at the same rank across sample.  then transform each
+# sample to the empirical distribution.
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
 	OtherNorm = 'quantile',
 	return.matrix.of.endogenous.probes = FALSE
 	);
 
+if(require(vsn)) { # only run if vsn installed
 # vsn.  apply a variance stabilizing normalization.
-# fit and predict the model using 'all' genes i.e. 'controls' and 'endogenous'.  this is the default
-# note this is just a wrapper for the vsn package
-# you could even add strata for the controls vs the endogenous to review systematic differences
+# fit and predict the model using 'all' genes 
+#	i.e. 'controls' and 'endogenous', this is the default
+# note this is just a wrapper for the vsn package.
+# you could even add strata for the controls vs the 
+# 	endogenous to review systematic differences
+
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
 	OtherNorm = 'vsn',
@@ -78,7 +92,8 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	genes.to.predict = 'all'
 	);
 
-# vsn. this time generate the parameters (fit the model) on the 'controls' and apply (predict) on the endogenous
+# vsn. this time generate the parameters (fit the model) on the 'controls' and apply 
+#	(predict) on the endogenous
 # alternatively you may want to use the endogenous probes for both fitting and predicting.
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
@@ -88,8 +103,10 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	genes.to.predict = 'endogenous'
 	);
 
-# vsn. apply standard NanoString normalization strategies as an alternative to the vsn affine transformation.
-# this effectively applies the glog2 variance stabilizing transformation to the adjusted counts
+# vsn. apply standard NanoString normalization strategies as an alternative to the vsn 
+#	affine transformation.
+# this effectively applies the glog2 variance stabilizing transformation to the 
+#	adjusted counts
 NanoString.mRNA.norm <- NanoStringNorm(
 	x = NanoString.mRNA,
 	CodeCount = 'sum',
@@ -101,6 +118,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 	genes.to.predict = 'endogenous',
 	calib = 'none'
 	);
+} # end vsn
 
 }
 \keyword{NanoString}
