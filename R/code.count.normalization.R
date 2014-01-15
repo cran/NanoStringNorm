@@ -19,7 +19,7 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE
 	# Code Count Normalization using sum: take sum of positive controls per sample
 	if ( CodeCount == 'sum' ) { 
 		pos.sample <- apply(
-			X = x[anno$Code.Class == 'Positive',], 
+			X = x[anno$Code.Class == 'Positive',,drop=FALSE], 
 			MARGIN = 2, 
 			FUN = sum
 			);
@@ -28,7 +28,7 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE
 	# Code Count Normalization using geometric mean
 	else if ( CodeCount == 'geo.mean' ) { 
 		pos.sample <- apply(
-			X = x[anno$Code.Class == 'Positive',],
+			X = x[anno$Code.Class == 'Positive',,drop=FALSE],
 			MARGIN = 2, 
 			FUN = get.geo.mean,
 			logged = logged

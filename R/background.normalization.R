@@ -1,4 +1,4 @@
-# The NanoStringNorm package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
+ #The NanoStringNorm package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
 # This package and its accompanying libraries is free software; you can redistribute it and/or modify it under the terms of the GPL
 # (either version 1, or at your option, any later version) or the Artistic License 2.0.  Refer to LICENSE for the full license text.
 # OICR makes no representations whatsoever as to the SOFTWARE contained herein.  It is experimental in nature and is provided WITHOUT
@@ -22,7 +22,7 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 		# take the mean of negative controls
 		if (Background == 'mean') {
 			background.level <- apply(
-				X = x[anno$Code.Class == 'Negative',], 
+				X = x[anno$Code.Class == 'Negative',,drop=FALSE], 
 				MARGIN = 2, 
 				FUN = mean, 
 				na.rm = TRUE
@@ -33,7 +33,7 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 		else if (Background == 'mean.2sd') {
 			mean.plus.2sd <- function(y) mean(y, na.rm = TRUE) + 2 * sd(y, na.rm = TRUE);
 			background.level <- apply(
-				X = x[anno$Code.Class == 'Negative',], 
+				X = x[anno$Code.Class == 'Negative',,drop=FALSE], 
 				MARGIN = 2, 
 				FUN = mean.plus.2sd
 				);
@@ -42,7 +42,7 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 		# take the maximum of negative controls
 		else if (Background == 'max'){
 			background.level <- apply(
-				X = x[anno$Code.Class == 'Negative',], 
+				X = x[anno$Code.Class == 'Negative',,drop=FALSE], 
 				MARGIN = 2, 
 				FUN = max, 
 				na.rm = TRUE
@@ -77,13 +77,13 @@ background.normalization <- function(x, anno, Background = 'none', verbose = TRU
 
 		# calculate count of missing values (DW missing could be moved to own function)
 		genes.proportion.missing <- apply(
-			X = x[grep('Endogenous', anno$Code.Class),],
+			X = x[grep('Endogenous', anno$Code.Class),,drop=FALSE],
 			MARGIN = 1,
 			FUN = function(y) { sum(y <= 0, na.rm = TRUE) / length(y) }
 			);
 
 		samples.proportion.missing <- apply(
-			X = x[grep('Endogenous', anno$Code.Class),],
+			X = x[grep('Endogenous', anno$Code.Class),,drop=FALSE],
 			MARGIN = 2,
 			FUN = function(y) { sum(y <= 0, na.rm = TRUE) / length(y) }
 			);

@@ -43,6 +43,9 @@ data(NanoString);
 NanoString.mRNA[NanoString.mRNA$Name \%in\% c('Eef1a1','Gapdh','Hprt1','Ppia','Sdha'),
 	'Code.Class'] <- 'Housekeeping';
 
+NanoString.mRNA <- NanoString.mRNA[1:50,];
+
+
 # strain x experimental condition i.e. replicate.
 # this is only a small subset of the original data used for the plot
 biological.replicates <- c("HW_1.5_0","HW_1.5_0","HW_1.5_0","HW_1.5_100","HW_1.5_100",

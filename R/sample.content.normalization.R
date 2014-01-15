@@ -25,17 +25,17 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 		# Check for Endogenous: take sum of housekeeping genes.
 		if (SampleContent == 'housekeeping.sum') {
 			rna.content <- apply(
-				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'), ], 
+				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'),,drop=FALSE ], 
 				MARGIN = 2, 
 				FUN = sum
 				);
 			}
 	
 		else if (SampleContent == 'housekeeping.geo.mean') {
-
+			
 			# take the geometric mean of the housekeeping genes.
 			rna.content <- apply(
-				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'), ], 
+				X = x[anno$Code.Class %in% c('Control', 'Housekeeping', 'housekeeping'),,drop=FALSE ], 
 				MARGIN = 2, 
 				FUN = get.geo.mean,
 				logged = logged
@@ -45,7 +45,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 		# take mean of all counts
 		else if (SampleContent == 'total.sum') {
 			rna.content <- apply(
-				X = x[endogenous.genes,],
+				X = x[endogenous.genes,,drop=FALSE],
 				MARGIN = 2, 
 				FUN = sum
 				);
@@ -72,7 +72,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 				}
 
 			rna.content <- apply(
-				X = x[low.cv.genes,][low.cv.genes.rank.lt10,],
+				X = x[low.cv.genes,][low.cv.genes.rank.lt10,,drop=FALSE],
 				MARGIN = 2, 
 				FUN = get.geo.mean,
 				logged = logged
@@ -83,7 +83,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 
 			# sum each RNA 
 			sum.rna <- apply(
-				X = x[endogenous.genes,],
+				X = x[endogenous.genes,,drop=FALSE],
 				MARGIN = 1,
 				FUN = sum
 				);
@@ -92,7 +92,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties.method = 'first');
 
 			rna.content <- apply(
-				X = x[endogenous.genes, ][rank.rna <= 75,],
+				X = x[endogenous.genes, ][rank.rna <= 75,,drop=FALSE],
 				MARGIN = 2,
 				FUN = mean,
 				na.rm = TRUE
@@ -103,7 +103,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 
 			# sum each RNA
 			sum.rna <- apply(
-				X = x[endogenous.genes,],
+				X = x[endogenous.genes,,drop=FALSE],
 				MARGIN = 1,
 				FUN = sum
 				);
@@ -112,7 +112,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rank.rna <- (length(sum.rna) + 1) - rank(sum.rna, ties.method = 'first');
 
 			rna.content <- apply(
-				X = x[endogenous.genes,][rank.rna <= 75,],
+				X = x[endogenous.genes,,drop=FALSE][rank.rna <= 75,,drop=FALSE],
 				MARGIN = 2,
 				FUN = get.geo.mean,
 				logged = logged

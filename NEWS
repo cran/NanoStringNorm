@@ -1,3 +1,35 @@
+NanoStringNorm 1.1.17 2014-01-15
+----------------------------------------------------------------
+
+* fixed error using only one control gene.  the matrix in the apply statement was getting changed to vector.
+
+NanoStringNorm v1.1.16 2013-09-01
+----------------------------------------------------------------
+
+* lme4
+ -lme4 doesn't work on some platforms
+ -NSN "suggests" lme4 but errored out if it was missing due to examples
+ -solution was add if(require(pkg)) in examples
+ -this was done for all suggests packages
+ 
+* Runit
+  if(require(RUnit)) was added to NanoStringNorm.unitTests.R.  Runit was recommended by BR to be a suggests and not a depends.  
+ - package needs to be able to run/test with and without suggest packages
+ 
+* Rd line length.  R-devel fails on example/usage length of 90.
+ 
+* ::: dropped in code due to check warning
+
+
+NanoStringNorm 1.1.15 2014-01-15
+----------------------------------------------------------------
+
+* R check compatablility
+ - reduced size of high resolution bitmaps used in vignette (100kb saved!)
+ - changed Nanostring to NanoString in text (seriously!)
+ - made googleVis example conditional depending on installation.  the package is under "suggests"
+* bug when negative control removes signal from all samples
+
 
 NanoStringNorm 1.1.14 2013-04-04
 ----------------------------------------------------------------
