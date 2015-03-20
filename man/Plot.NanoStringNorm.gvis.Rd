@@ -26,7 +26,19 @@
  \cr \cr
  Similarly, for gene level data you can explore the results summary statistics and trait associations.  For example, change the x-axis to Fold-Change.trait.X and the y-axis to P-value.trait.x, the size of the dot to mean expression and the colour to Code.Class.  This gives a nice interactive volcano plot.  Alternatively, you can plot the results of P-value.trait.x vs P-value-trait.y in order to look for common genes effecting different traits.  Note that P-values are displayed as -log10 P-value.
  \cr \cr
- To display plots saved as a bundle, first navigate to the directory and execute the mongoose binary.  Then start your browser and specify the following url \url{http://127.0.0.1:8080}  There should be a set of links to the plots.  The windows executable binary is automatically downloaded if no location is provided.  For other systems the source code is downloaded.  To install untar the binary, run make and then copy the resulting binary to the directory containing the output html files. \code{(cd output.directory; tar -zxvf mongoose.tgz; cd mongoose; make linux; cp mongoose ..; ./mongoose)}
+ To display plots saved as a bundle, first navigate to the directory and execute the mongoose binary.  Then start your browser and specify the following url \file{http://127.0.0.1:8080}  There should be a set of links to the plots.  The windows executable binary is automatically downloaded if no location is provided.  For other systems the source code is downloaded.  To install untar the binary, run make and then copy the resulting binary to the directory containing the output html files. 
+ \cr \cr
+ \code{cd output.directory;}
+ \cr
+ \code{tar -zxvf mongoose.tgz;}
+ \cr
+ \code{cd mongoose;}
+ \cr
+ \code{make linux;}
+ \cr
+ \code{cp mongoose ..;}
+ \cr
+ \code{./mongoose;}
  \cr \cr
  For further documentation regarding these plots see the R package googleVis and Google's visualization API.
  \cr \cr
@@ -73,7 +85,7 @@
          );
  
  # plot the sample summaries to your browser
- if (require(googleVis)) \{
+ if (requireNamespace("googleVis")) \{
  Plot.NanoStringNorm.gvis(
          x = NanoString.mRNA.norm,
          plot.type = c('gene.norm', 'sample'),

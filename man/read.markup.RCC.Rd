@@ -7,13 +7,15 @@ read.markup.RCC(
  rcc.path = ".",
  rcc.pattern = "*.RCC|*.rcc",
  exclude = NULL, 
- include = NULL)	
+ include = NULL,
+ nprobes = -1)
 }
 \arguments{
   \item{rcc.path}{The directory of the rcc files. Defaults to current working directory.}
   \item{rcc.pattern}{The file pattern used to search for the RCC files.  Defaults to the RCC extension}
   \item{exclude}{A list of files to ignore}
   \item{include}{A list of files to include}
+  \item{nprobes}{(Optional) This defaults to the read.table default for nrows (-1). In some cases, a message follows the comment ("<") line and causes an error. In this case, the user can now define the number of rows (number of probes including controls and experimental) that should be read in.}
 }
 
 \value{

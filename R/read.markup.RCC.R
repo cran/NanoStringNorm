@@ -9,7 +9,7 @@
 # If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
 # credit be given to OICR scientists, as scientifically appropriate.
 
-read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude = NULL, include = NULL) {
+read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude = NULL, include = NULL, nprobes = -1) {
 
 	# check if path exist
 	if (! file.exists(rcc.path) ) {
@@ -29,8 +29,24 @@ read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude
 
 	count = 1;
 	for (rcc.file in rcc.files) {
-		rcc.header <- read.table(paste(rcc.path, rcc.file, sep = "/"), nrows = 15, comment.char = "<", sep = ",", as.is = TRUE);
-		rcc.data <- read.table(paste(rcc.path, rcc.file, sep = "/"), skip = 25, header = TRUE, comment.char = "<", sep = ",", as.is = TRUE);
+
+		rcc.header <- read.table(
+			paste(rcc.path, rcc.file, sep = "/"),
+			nrows = 15,
+			comment.char = "<",
+			sep = ",",
+			as.is = TRUE
+			);
+
+		rcc.data <- read.table(
+			paste(rcc.path, rcc.file, sep = "/"),
+			skip = 25,
+			header = TRUE,
+			comment.char = "<",
+			sep = ",",
+			as.is = TRUE,
+			nrows = nprobes
+			);
 
 		sample.name <- gsub(".RCC", "", gsub(" ", "_", rcc.file));
 		colnames(rcc.header)[2] <- sample.name;

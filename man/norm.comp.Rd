@@ -53,7 +53,7 @@ biological.replicates <- c("HW_1.5_0","HW_1.5_0","HW_1.5_0","HW_1.5_100","HW_1.5
 "LE_19_0","LE_19_0","LE_96_0","LE_96_0","LE_96_0","HW_10_100","HW_10_100","HW_10_100",
 "HW_10_100","HW_6_100","HW_6_100","HW_96_0");
 
-if (require(lme4)) {
+if (requireNamespace("lme4")) {
 
 norm.comp.results <- norm.comp(
 x = NanoString.mRNA,

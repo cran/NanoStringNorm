@@ -11,7 +11,7 @@
 
 .test <- function(dir, pattern = "^test_.*\\.R$") {
 
-    require("RUnit");
+    requireNamespace("RUnit");
     package.name <- "NanoStringNorm";
 
 	print(
@@ -22,7 +22,7 @@
 			)
 		);
 
-    suite <- defineTestSuite(
+    suite <- RUnit::defineTestSuite(
         name = paste(package.name, "RUnit Tests", sep = " "),
         dirs = system.file("unitTests", package = package.name),
         testFileRegexp = pattern,
@@ -30,9 +30,9 @@
         rngNormalKind = "default"
         );
     
-    result <- runTestSuite(suite);
+    result <- RUnit::runTestSuite(suite);
     
-    printTextProtocol(result, showDetails=TRUE);
+    RUnit::printTextProtocol(result, showDetails=TRUE);
 
     return(result);
     }

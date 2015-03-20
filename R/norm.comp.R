@@ -11,7 +11,7 @@
 
 norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none', 'sum', 'geo.mean'), Background.methods = c('none','mean', 'mean.2sd','max'), SampleContent.methods = c('none','housekeeping.sum', 'housekeeping.geo.mean', 'total.sum','top.mean', 'top.geo.mean', 'low.cv.geo.mean'), OtherNorm.methods = c('none','quantile','zscore', 'rank.normal', 'vsn'),  histogram = FALSE, verbose = TRUE, icc.method = "mixed") { 
 
-	if (!require("lme4")) {
+	if (!requireNamespace("lme4")) {
 		stop("norm.comp: lme4 is required");
 		}
 
@@ -101,7 +101,7 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 		if (method == "mixed") {
 			#expr = lme(x ~ random = ~ 1|replicates)
 			mixed.fit <- tryCatch(
-				expr = lmer(x ~ 1|replicates),
+				expr = lme4::lmer(x ~ 1|replicates),
 				error = function(e) { return ( c(NULL)); }
 				);
 
@@ -109,8 +109,8 @@ norm.comp <- function(x, anno, replicates = NULL,  CodeCount.methods = c('none',
 				icc <- NA;
 				}
 			else {
-				s2_between <- as.numeric(VarCorr(mixed.fit)$replicates[1,1]);
-				s2_within <- as.numeric(attr(VarCorr(mixed.fit), "sc"))^2;
+				s2_between <- as.numeric(lme4::VarCorr(mixed.fit)$replicates[1,1]);
+				s2_within <- as.numeric(attr(lme4::VarCorr(mixed.fit), "sc"))^2;
 				icc <- s2_between/(s2_between + s2_within);
 				}
 
