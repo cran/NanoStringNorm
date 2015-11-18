@@ -208,7 +208,7 @@ NanoString.mRNA.norm <- NanoStringNorm(
 
 As an alternative to the standard normalization methods proposed by NanoString there is facility to apply an expanding set of additional methods.  Some basic strategies include transforming each sample to zscores, the standard normal distribution based on ranks, and an empirical derived normal distribution.  The first two methods have advantages when comparing results across batches or platforms in the case of joint or meta-analysis.  Quantile normalization on the other hand has the advantage of scaling samples within the same pre-processing batch to a common empirically derived distribution.
 \\ \\
-Variance Stabilizing Normalization is also implemented via functionality in the popular \Rpackage{vsn} package (available for installation via Bioconductor).  Additional mixed model and count data (negative binomial) based methods are currently being added.
+Variance Stabilizing Normalization is also implemented via functionality in the popular \Rpackage{vsn} package (available for installation via Bioconductor).
 \\ \\
 Summary diagnostics and plotting are still available for these methods.
 \\

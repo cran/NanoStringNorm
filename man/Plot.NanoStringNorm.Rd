@@ -5,7 +5,7 @@
 \usage{
 Plot.NanoStringNorm(
 	x,
-	plot.type = 'norm.factors',
+	plot.type = 'RNA.estimates',
 	samples = NA,
 	genes = NA,
 	label.best.guess = TRUE,

@@ -62,12 +62,10 @@ read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 	# parse the header
 
 	# drop missing rows
-	header <- header[-c(8),];
+	header <- header[!rownames(header) %in% c('file.attributes','lane.attributes'),];
 	# drop missing columns
-	header <- header[,-c(1,2)];
-	# drop trailing rows
-	header <- header[1:12,]; 
-	# drop trailing colums
+	header <- header[,-c(1,2)]; 
+	# drop trailing columns
 	header <- header[,!is.na(header[1,]) & !is.na(header[2,])];
 	# get sample IDs
 	sample.ids <- header[rownames(header) %in% tolower(sample.id.row),];

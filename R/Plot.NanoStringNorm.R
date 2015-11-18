@@ -9,7 +9,7 @@
 # If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
 # credit be given to OICR scientists, as scientifically appropriate.
 
-Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = list(), label.as.legend = TRUE, label.n = 10, title = TRUE, col = NA) {
+Plot.NanoStringNorm <- function(x, plot.type = 'RNA.estimates', samples = NA, genes = NA, label.best.guess = TRUE, label.ids = list(), label.as.legend = TRUE, label.n = 10, title = TRUE, col = NA) {
 
 	# check that the object being plotted is the right class
 	if ( class(x) != 'NanoStringNorm' ) { stop('In order to plot the input object needs to be of class NanoStringNorm.  Try changing return.matrix.of.endogenous.probe to FALSE.'); }
@@ -613,7 +613,7 @@ Plot.NanoStringNorm <- function(x, plot.type = 'norm.factors', samples = NA, gen
 					cex = batch.cex,
 					col = batch.col,
 					xlab = sample.statistic,
-					ylim = c(-max(abs(batch.diff)),max(abs(batch.diff))),
+					ylim = c(-max(abs(batch.diff), na.rm=TRUE),max(abs(batch.diff), na.rm=TRUE)),
 					#main = if (title == TRUE) sample.statistic else NA,
 					main = sample.statistic,
 					xaxt = 'n'

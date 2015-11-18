@@ -9,9 +9,23 @@ export(
 	'nsn'
 	)
 
+importFrom("grDevices", "rgb")
+importFrom("graphics", "abline", "axis", "box", "hist", "legend",
+         "lines", "mtext", "par", "plot", "points", "segments",
+         "text")
+importFrom("methods", "is")
+importFrom("stats", "aov", "coef", "cor", "density", "lm", "lowess",
+         "median", "na.omit", "p.adjust", "qnorm",
+         "quantile", "resid", "sd", "t.test")
+importFrom("utils", "download.file", "packageDescription",
+         "read.table")
+importFrom("vsn", "predict")
+
 import(
-	'gdata'
+    'gdata'
 	)
+
+
 
 #	'probe.correction.factor.normalization',
 #	'code.count.normalization',
