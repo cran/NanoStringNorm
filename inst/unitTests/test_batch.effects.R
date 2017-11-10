@@ -21,8 +21,8 @@ test.batch.effects <- function(date.input = '2011-11-04', date.checked.output = 
 	trait         <- read.table(paste(path.to.input.files, 'mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
 
 	# read *checked output*
-	checked.output.batch <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_Batch_effects.txt', sep = ''));
-	checked.output.sample.summary <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_Sample_Summary.txt', sep = ''));
+	checked.output.batch <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_Batch_effects.txt.gz', sep = '')));
+	checked.output.sample.summary <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_Sample_Summary.txt.gz', sep = '')));
 
 	# run function to get *test output* 
 	test.output.batch      <- NanoStringNorm:::get.batch.effects(x, anno, sample.summary.stats = checked.output.sample.summary, traits = trait);

@@ -1,3 +1,16 @@
+NanoStringNorm 1.2.0 2017-08-18
+----------------------------------------------------------------
+
+* fixed read.markup.RCC() error on new NanoString nCounter FLEX instrument
+
+NanoStringNorm 1.1.22 2017-06-30
+----------------------------------------------------------------
+
+* NanoStringNorm
+ - added parameters "CodeCount.summary.target" and "SampleContent.summary.target"
+ - these parameters allow users to specify expected positive control and housekeeping probe summary values, which are used during the cross-sample normalization
+ - this update allows for sample-independent normalization of various CodeCount and SampleContent methods 
+
 NanoStringNorm 1.1.17 2014-01-15
 ----------------------------------------------------------------
 

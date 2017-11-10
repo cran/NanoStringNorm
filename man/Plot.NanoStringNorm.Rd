@@ -49,7 +49,7 @@ The normalization factors plot looks at the calculated normalization parameters 
 The positive control plots compare the expected concentration with observed counts.  Orange dots are the negative controls.  The intercept reflects the sensitivity of the assay for that sample. 
 
 }
-\examples{
+\examples{\dontrun{
 
 # load data
 data(NanoString);
@@ -129,7 +129,7 @@ Plot.NanoStringNorm(
 	);
 dev.off()
 
-}
+}}
 \author{Daryl M. Waggott}
 
 \keyword{NanoString}

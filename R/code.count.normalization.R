@@ -9,7 +9,7 @@
 # If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
 # credit be given to OICR scientists, as scientifically appropriate.
 
-code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE, verbose = TRUE) {
+code.count.normalization <- function(x, anno, CodeCount = 'none', CodeCount.summary.target = NA, logged = FALSE, verbose = TRUE) {
 
 	# check if missing
 	if (is.na(CodeCount)) {
@@ -38,9 +38,21 @@ code.count.normalization <- function(x, anno, CodeCount = 'none', logged = FALSE
 	else {
 		stop('CodeCount: Unimplemented CodeCount normalization method');
 		}
+
+	# check that the target positive control count is an expected format
+	if(!is.na(CodeCount.summary.target) & !is.numeric(CodeCount.summary.target)) {
+		CodeCount.summary.target <- NA;
+		warning('The target positive control value CodeCount.summary.target must be NA or a numeric. Setting it to NA.')
+	}
 	
-	# calculate the normalization factor as the ratio of mean vs sample values
-	pos.norm.factor <- mean(pos.sample) / pos.sample;
+	# if a target positive control count is not provided, calculate the normalization factor as the ratio of mean vs sample values
+	if(is.na(CodeCount.summary.target)) {
+		pos.norm.factor <- mean(pos.sample) / pos.sample;
+	
+	# Otherwise use the provided count to calculate a normalization factor
+	} else {
+		pos.norm.factor <- CodeCount.summary.target / pos.sample;
+		}
 
 	# warning if norm factor is outside expected range
 	if ( any(pos.norm.factor > 3) | any(pos.norm.factor < 0.3) ) {

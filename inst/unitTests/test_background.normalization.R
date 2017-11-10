@@ -21,9 +21,9 @@ test.background.normalization <- function(date.input = '2011-11-04', date.checke
 	trait         <- read.table(paste(path.to.input.files, 'mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
 
 	# read *checked output*
-	checked.output.mean <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_mean_Background_Normalization.txt', sep = ''));
-	checked.output.mean.2sd <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_mean.2sd_Background_Normalization.txt', sep = ''));
-	checked.output.max <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_max_Background_Normalization.txt', sep = ''));
+	checked.output.mean <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_mean_Background_Normalization.txt.gz', sep = '')));
+	checked.output.mean.2sd <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_mean.2sd_Background_Normalization.txt.gz', sep = '')));
+	checked.output.max <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_max_Background_Normalization.txt.gz', sep = '')));
 
 	# run function to get *test output* 
 	test.output.mean      <- NanoStringNorm:::background.normalization(x, anno, 'mean', verbose = FALSE);

@@ -9,7 +9,7 @@
 # If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
 # credit be given to OICR scientists, as scientifically appropriate.
 
-NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', round.values = FALSE, is.log = FALSE, take.log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, guess.cartridge = TRUE, ...) {
+NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 'adjust', CodeCount = 'none', Background = 'none', SampleContent = 'none', OtherNorm = 'none', CodeCount.summary.target = NA, SampleContent.summary.target = NA, round.values = FALSE, is.log = FALSE, take.log = FALSE, return.matrix.of.endogenous.probes = FALSE, traits = NA, predict.conc = FALSE, verbose = TRUE, genes.to.fit = NA, genes.to.predict = NA, guess.cartridge = TRUE, ...) {
 
 	# check if the data is a list, matrix, or data.frame
 	if ( !(is.list(x) | is.data.frame(x) | is.matrix(x)) ) {
@@ -157,7 +157,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do CodeCount Normalization
 	if ( CodeCount %in% c('sum', 'geo.mean') ) {
-		output.code.count.normalization <- code.count.normalization(x, anno, CodeCount = CodeCount, logged = is.log, verbose = verbose);
+		output.code.count.normalization <- code.count.normalization(x, anno, CodeCount = CodeCount, CodeCount.summary.target = CodeCount.summary.target, logged = is.log, verbose = verbose);
 		x <- output.code.count.normalization$x;
 		pos.norm.factor <- output.code.count.normalization$pos.norm.factor;
 		pos.sample <- output.code.count.normalization$pos.sample;
@@ -174,7 +174,7 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 
 	# do Sample Content Normalization
 	if ( SampleContent %in% c('housekeeping.sum', 'housekeeping.geo.mean', 'total.sum', 'top.mean', 'top.geo.mean', 'low.cv.geo.mean') ) {
-		output.sample.content.normalization <- sample.content.normalization(x, anno, SampleContent = SampleContent, logged = is.log, verbose = verbose);
+		output.sample.content.normalization <- sample.content.normalization(x, anno, SampleContent = SampleContent, SampleContent.summary.target = SampleContent.summary.target, logged = is.log, verbose = verbose);
 		x <- output.sample.content.normalization$x;
 		sampleContent.norm.factor <- output.sample.content.normalization$sampleContent.norm.factor;
 		rna.content <- output.sample.content.normalization$rna.content;
@@ -244,6 +244,8 @@ NanoStringNorm <- function(x, anno = NA, header = NA, Probe.Correction.Factor = 
 			Background = Background,
 			SampleContent = SampleContent,
 			OtherNorm = OtherNorm,
+			CodeCount.summary.target = CodeCount.summary.target,
+			SampleContent.summary.target = SampleContent.summary.target,
 			round = round.values,
 			is.log = is.log,
 			take.log = take.log

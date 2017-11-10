@@ -12,6 +12,8 @@ NanoStringNorm(
 	Background = 'none',
 	SampleContent = 'none',
 	OtherNorm = 'none',
+	CodeCount.summary.target = NA,
+	SampleContent.summary.target = NA,
 	round.values = FALSE,
 	is.log = FALSE,
 	take.log = FALSE,
@@ -34,6 +36,8 @@ NanoStringNorm(
   \item{Background}{The method used to estimate the background count level.  Background is calculated based on negative controls and the options are \emph{none, mean, mean.2sd, max}.  Mean is the least is the least conservative, while max and mean.2sd are the most robust to false positives.  The calculated background is subtracted from each sample.  Background is calculated after code count adjustment.}
   \item{SampleContent}{The method used to normalize for sample or RNA content i.e. pipetting fluctuations.  The options are \emph{none, housekeeping.sum, housekeeping.geo.mean, total.sum, low.cv.geo.mean, top.mean} and \emph{top.geo.mean}.  The Housekeeping options require a set of annotated genes.  For RNA datasets the genes can be specified by editing the Code.Class field to equal 'Housekeeping' or 'Control'.  miRNA Code Sets generally already have annotated Housekeeping genes.  Note that the Housekeeping genes on miRNA Code Sets are messenger RNAs and therefore undergo a different laboratory process, specifically no ligation.  If using Housekeeping genes then 'housekeeping.geo.mean' is recommended.  Alternatively, you can use the method \emph{total.sum} which uses the sum of the all the genes or \emph{top.geo.mean} which uses the geometric mean of the top 75 expressed.  \emph{low.cv.geo.mean} has recently been added to reduce the influence of outliers and normalizing to trait associated genes.  This method simply selects genes that expressed with low coefficients of variation.  Sample Content adjustment is applied after Code Count and Background correction.  }
   \item{OtherNorm}{Some additional normalization methods.  Options include 'none', 'quantile' and 'zscore'.  OtherNorm is applied after CodeCount, Background, SampleContent normalizations.  This is probably the largest source of inter sample variation in most studies.}
+  \item{CodeCount.summary.target}{The expected summary value for CodeCount positive control probes. By default this is calculated as the mean of summary values across all samples. This target value is then used to determine the normalization factor of each sample when a CodeCount method is applied. User-assignment of the target value produces sample-independent CodeCount normalization, allowing for new samples to be added without changing the normalization factors of existing samples.}
+  \item{SampleContent.summary.target}{The expected summary value for SampleContent housekeeping control probes. By default this is calculated as the mean of summary values across all samples. This target value is then used to determine the normalization factor of each sample when a SampleContent method is applied. User-assignment of the target value produces sample-independent SampleContent normalization, allowing for new samples to be added without changing the normalization factors of existing samples. Note that by definition 'low.cv.geo.mean', 'top.mean', and 'top.geo.mean' methods are not compatible with sample-independent normalization.}
   \item{round.values}{Should the values be rounded to the nearest absolute count or integer.  This simplifies interpretation if taking the log by removing values 0-1 which result in negatives.}
   \item{is.log}{Is the data already in logspace.  This is recommended if applying NSN to PCR type microarray data.  In this scenario the geometric log is altered and negative values are not flagged.}
   \item{take.log}{Should a log2 transformation of the data be used.  Taking the log may help distributional assumptions and consistency with PCR based methods for calculating fold change.  Note, this is not a flag on if the log has already been taken.}
@@ -59,7 +63,7 @@ By default the function returns a list of objects including pre-processed counts
 }
 \references{
 See NanoString website for PDFs on analysis guidelines:
-	\url{http://www.nanostring.com/support/prod-lit/}
+	\url{https://www.nanostring.com/support/product-support/support-documentation}
 
 The NanoString assay is described in the paper:
 	Fortina, P. & Surrey, S. Digital mRNA profiling. Nature biotechnology 26, 293-294 (2008).

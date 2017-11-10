@@ -13,7 +13,7 @@ read.xls.RCC <- function(xls, sheet = 1, perl, sample.id.row = "File.Name") {
 
 	# check if perl exists
 	if ( length(Sys.which("perl")) == 0 ) {
-		stop(paste("READ.XLS.RCC: Perl was not found in you're PATH.  Is it installed?  \n\tIf it is add it to you're PATH variable or specify the location in the 'perl' argument  \n", xls)) ;
+		stop(paste("READ.XLS.RCC: Perl was not found in your PATH.  Is it installed?  \n\tIf it is add it to your PATH variable or specify the location in the 'perl' argument  \n", xls)) ;
 		}
 
 	# check if file exist

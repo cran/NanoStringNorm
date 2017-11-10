@@ -21,7 +21,7 @@ test.sample.summary.stats <- function(date.input = '2011-11-04', date.checked.ou
 	trait         <- read.table(paste(path.to.input.files, 'NanoString_mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
 
 	# read *checked output*
-	checked.output.sample.summary <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_Sample_Summary.txt', sep = ''));
+	checked.output.sample.summary <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_Sample_Summary.txt.gz', sep = '')));
 
 	# run function to get *test output* 
 	test.output.sample.summary      <- NanoStringNorm:::get.sample.summary.stats(x, anno);

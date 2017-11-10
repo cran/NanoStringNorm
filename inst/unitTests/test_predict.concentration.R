@@ -21,7 +21,7 @@ test.code.count.normalization <- function(date.input = '2011-11-04', date.checke
 	trait         <- read.table(paste(path.to.input.files, 'mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
 
 	# read *checked output*
-	checked.output.predict.conc <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_Predict_Conc.txt', sep = ''));
+	checked.output.predict.conc <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_Predict_Conc.txt.gz', sep = '')));
 	
 	# run function to get *test output* 
 	test.output.predict.conc      <- NanoStringNorm:::predict.concentration(x, anno, log = TRUE, verbose = FALSE);

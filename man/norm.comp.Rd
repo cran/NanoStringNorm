@@ -33,7 +33,7 @@ A data.frame is returned with a single row for each combination of methods.  For
 }
 \author{Daryl M. Waggott}
 
-\examples{
+\examples{\dontrun{
 
 # load the NanoString.mRNA dataset
 data(NanoString);
@@ -68,7 +68,7 @@ verbose = FALSE
 
 }
 
-}
+}}
 \keyword{NanoString}
 \keyword{Normalization}
 \keyword{mRNA}  

@@ -21,7 +21,7 @@ test.output.formatting <- function(date.input = '2011-11-04', date.checked.outpu
 	trait <- read.table(paste(path.to.input.files, 'mRNA_TCDD_strain_info.txt', sep = ''), sep = '\t', header = TRUE, as.is = TRUE);
 
 	# read *checked output*
-	checked.output.roundT.logT <- dget(file = paste(path.to.output.files, 'mRNA_TCDD_Output_Formatting_roundT_logT.txt', sep = ''));
+	checked.output.roundT.logT <- dget(file = gzfile(paste(path.to.output.files, 'mRNA_TCDD_Output_Formatting_roundT_logT.txt.gz', sep = '')));
 
 	# run function to get *test output* 
 	test.output.roundT.logT <- NanoStringNorm:::output.formatting(x, anno, round.values = TRUE, log = TRUE, verbose = FALSE);

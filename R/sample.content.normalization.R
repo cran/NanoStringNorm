@@ -9,7 +9,7 @@
 # If publications result from research using this SOFTWARE, we ask that the Ontario Institute for Cancer Research be acknowledged and/or
 # credit be given to OICR scientists, as scientifically appropriate.
 
-sample.content.normalization <- function(x, anno, SampleContent = 'none', logged = FALSE, verbose = TRUE) {
+sample.content.normalization <- function(x, anno, SampleContent = 'none', SampleContent.summary.target = NA, across.samples = TRUE, logged = FALSE, verbose = TRUE) {
 
 	# check if missing
 	if (is.na(SampleContent)) {
@@ -58,7 +58,7 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			gene.summary.stats  <- as.data.frame(get.gene.summary.stats(x, anno));
 			low.cv.genes <- (
 				grepl('endogenous|housekeeping|control', anno$Code.Class, ignore.case=TRUE) & 
-#				gene.summary.stats$Mean > 10 & 
+				# gene.summary.stats$Mean > 10 & 
 				gene.summary.stats$Mean > quantile(gene.summary.stats$Mean, 0.5, na.rm = TRUE) &
 				gene.summary.stats$CV < quantile(gene.summary.stats$CV, 0.5, na.rm = TRUE)
 				);
@@ -137,8 +137,20 @@ sample.content.normalization <- function(x, anno, SampleContent = 'none', logged
 			rna.content[rna.content < 1] <- 1; 
 			}
 
-		# calc normalization factor
-		sampleContent.norm.factor <- mean(rna.content) / rna.content;
+		# check that the target housekeeping control count is an expected format
+		if(!is.na(SampleContent.summary.target) & !is.numeric(SampleContent.summary.target)) {
+			SampleContent.summary.target <- NA;
+			warning('The target housekeeping control value SampleContent.summary.target must be NA or a numeric. Setting it to NA.')
+			}
+
+		# if a target housekeeping control count is not provided, calculate the normalization factor as the ratio of mean vs sample values
+		if(is.na(SampleContent.summary.target)) {
+			sampleContent.norm.factor <- mean(rna.content) / rna.content;
+
+		# Otherwise use the provided count to calculate a normalization factor
+		} else {
+			sampleContent.norm.factor <- SampleContent.summary.target / rna.content;
+			}
 
 		# flag any samples that are outliers
 		rna.content.sd.from.mean <- data.frame(rna.zscore = (rna.content - mean(rna.content)) / sd(rna.content));

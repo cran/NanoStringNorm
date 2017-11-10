@@ -144,6 +144,8 @@ NanoStringNorm prints informative diagnostic messages to the screen.  Specifical
 \\ \\
 In the following example the geometric mean is used to summarize the CodeCount (positive) and SampleContent (houskeeping) controls.  This minimizes the impact of outlier values.  Also, a stringent background correction is applied (mean + 2 standard deviations) which removes a large proportion of false positives and therefore increases specificity at the expense of some sensitivity.  For preliminary analysis it can be easier to focus on high confidence results first.  For these reasons, \textbf{the following model is recommended} as a first step.  Adjustments, can be made based on review of diagnostics.
 \\ \\
+Background correction normalizes data on the assumption that negative control probe summaries should be transformed to 0. Similarly, CodeCount and SampleContent corrections normalize on the assumption that positive and housekeeping control probe summaries should each be equalized to some target value across all samples. These target values vary by experimental design; by default, they are calculated as average summary values across all samples. One implication of this default behaviour is that the CodeCount and SampleContent normalized data of a single sample are dependent on other samples being normalized. An alternative option is for the user to specify expected target summary values using the 'CodeCount.summary.target' and 'SampleContent.summary.target' parameters, which allows samples to be normalized independently.
+\\ \\
 For miRNA data the use of mRNA or RNU's can be problematic, so change the SampleContent method to 'top.geo.mean'.
 %
 <<eg.standard.3>>=

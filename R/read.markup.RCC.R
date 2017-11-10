@@ -30,24 +30,47 @@ read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude
 	count = 1;
 	for (rcc.file in rcc.files) {
 
-		rcc.header <- read.table(
-			paste(rcc.path, rcc.file, sep = "/"),
-			nrows = 15,
-			comment.char = "<",
-			sep = ",",
-			as.is = TRUE
+		cat("\nreading RCC file [", count, "/", length(rcc.files), "]: ", rcc.file, sep = "");
+
+		# read RCC file and enclose in valid document tags for XML parser
+		data <- xmlParse(
+			paste(
+				"<doc>", 
+				paste(readLines(paste(rcc.path, rcc.file, sep = "/"), warn = FALSE), collapse = "\r"), 
+				"</doc>", 
+				sep = ""
+				)
 			);
 
-		rcc.data <- read.table(
-			paste(rcc.path, rcc.file, sep = "/"),
-			skip = 25,
-			header = TRUE,
-			comment.char = "<",
-			sep = ",",
-			as.is = TRUE,
-			nrows = nprobes
-			);
+		# extract info for various tags
+		header.info <- xmlToDataFrame(getNodeSet(data, "/doc//Header"));
+		sample.info <- xmlToDataFrame(getNodeSet(data, "/doc//Sample_Attributes"));
+		lane.info <- xmlToDataFrame(getNodeSet(data, "/doc//Lane_Attributes"));
+		code.info <- xmlToDataFrame(getNodeSet(data, "/doc//Code_Summary"));
 
+		# convert data into table for all data structures
+		header.con <- textConnection(as.character(header.info$text));
+		header.data <- read.csv(header.con, header = FALSE, stringsAsFactors = FALSE);
+
+		sample.con <- textConnection(as.character(sample.info$text));
+		sample.data <- read.csv(sample.con, header = FALSE, stringsAsFactors = FALSE);
+		sample.data[which(sample.data[, 1] == "ID"), 1] <- "sample.id";
+
+		lane.con <- textConnection(as.character(lane.info$text));
+		lane.data <- read.csv(lane.con, header = FALSE, stringsAsFactors = FALSE);
+		lane.data[which(lane.data[, 1] == "ID"), 1] <- "lane.id";
+
+		code.con <- textConnection(as.character(code.info$text));
+		code.data <- read.csv(code.con, header = TRUE, stringsAsFactors = FALSE);
+
+		# combine metadata
+		rcc.header <- do.call(rbind, list(header.data, sample.data, lane.data));
+		rcc.data <- code.data;
+
+		# assign rownames for lookup
+		rownames(rcc.header) <- rcc.header[, 1];
+
+		# assign sample names
 		sample.name <- gsub(".RCC", "", gsub(" ", "_", rcc.file));
 		colnames(rcc.header)[2] <- sample.name;
 		colnames(rcc.data)[4] <- sample.name;
@@ -57,22 +80,28 @@ read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude
 			rcc.data.merged <- rcc.data;
 			}
 		else {
-			rcc.header.merged <- data.frame(rcc.header.merged, subset(rcc.header, select = 2));
+			rcc.header.merged <- data.frame(
+				rcc.header.merged, 
+				subset(rcc.header[rcc.header.merged[, 1], ], select = 2)
+				);
 			rcc.data.merged <- data.frame(rcc.data.merged, subset(rcc.data, select = 4));
 			}
 
 		count=count+1;
 		}
 
-	rcc.header.merged[3,1] <- "sample.id";
-	rcc.header.merged[9,1] <- "lane.id";
+	# assign rownames
 	rownames(rcc.header.merged) <- rcc.header.merged[,1];
 	rcc.header.merged <- rcc.header.merged[,-1];
 
+	# set column name
 	colnames(rcc.data.merged[1]) <- "Code.Count";
 
+	# merge data structures
 	x <- list(x = rcc.data.merged, header = rcc.header.merged);
 
 	class(x) <- 'NanoString';
+
 	return(x);
+
 	}
