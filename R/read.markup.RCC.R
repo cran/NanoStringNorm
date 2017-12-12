@@ -51,17 +51,21 @@ read.markup.RCC <- function(rcc.path = ".", rcc.pattern = "*.RCC|*.rcc", exclude
 		# convert data into table for all data structures
 		header.con <- textConnection(as.character(header.info$text));
 		header.data <- read.csv(header.con, header = FALSE, stringsAsFactors = FALSE);
+		close(header.con);
 
 		sample.con <- textConnection(as.character(sample.info$text));
 		sample.data <- read.csv(sample.con, header = FALSE, stringsAsFactors = FALSE);
 		sample.data[which(sample.data[, 1] == "ID"), 1] <- "sample.id";
+		close(sample.con);
 
 		lane.con <- textConnection(as.character(lane.info$text));
 		lane.data <- read.csv(lane.con, header = FALSE, stringsAsFactors = FALSE);
 		lane.data[which(lane.data[, 1] == "ID"), 1] <- "lane.id";
+		close(lane.con);
 
 		code.con <- textConnection(as.character(code.info$text));
 		code.data <- read.csv(code.con, header = TRUE, stringsAsFactors = FALSE);
+		close(code.con);
 
 		# combine metadata
 		rcc.header <- do.call(rbind, list(header.data, sample.data, lane.data));
