@@ -1,10 +1,10 @@
 Package: NanoStringNorm
 Type: Package
 Title: Normalize NanoString miRNA and mRNA Data
-Version: 1.2.1
+Version: 1.2.1.1
 Date: 2017-12-11
 Author: Daryl M. Waggott
-Maintainer: Paul Boutros <Paul.Boutros@oicr.on.ca>
+Maintainer: ORPHANED
 Depends: R (>= 2.14.0), gdata (>= 2.8.2), vsn (>= 3.22.0), XML (>=
         3.98-1.5)
 Imports: methods
@@ -14,6 +14,6 @@ License: GPL-2
 LazyLoad: yes
 LazyData: yes
 NeedsCompilation: no
-Packaged: 2017-12-11 16:36:31 UTC; clalansingh
+Packaged: 2020-09-11 09:11:05 UTC; ripley
 Repository: CRAN
-Date/Publication: 2017-12-12 22:33:57 UTC
+Date/Publication: 2020-09-11 11:11:11
